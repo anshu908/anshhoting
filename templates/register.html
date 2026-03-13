@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Register — ANSHHOSTING</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:#030508;font-family:'Space Grotesk',sans-serif;color:#e8eaf0}
+
+#c{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.grid{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:linear-gradient(rgba(0,200,255,.028) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,200,255,.028) 1px,transparent 1px);
+  background-size:52px 52px;
+  -webkit-mask-image:radial-gradient(ellipse 75% 75% at 50% 50%,#000 20%,transparent 100%);
+  mask-image:radial-gradient(ellipse 75% 75% at 50% 50%,#000 20%,transparent 100%);
+  animation:gp 9s ease-in-out infinite}
+@keyframes gp{0%,100%{opacity:.5}50%{opacity:1}}
+.scan{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,200,255,.005) 4px)}
+.orb{position:fixed;border-radius:50%;filter:blur(95px);pointer-events:none;z-index:1;
+  animation:op 11s ease-in-out infinite}
+@keyframes op{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.o1{width:520px;height:520px;background:rgba(0,200,255,.052);top:-160px;right:-160px}
+.o2{width:380px;height:380px;background:rgba(168,85,247,.042);bottom:-120px;left:-120px;animation-delay:-6s}
+.o3{width:260px;height:260px;background:rgba(0,255,163,.03);top:35%;left:5%;animation-delay:-3s}
+
+.wrap{position:relative;z-index:10;min-height:100vh;display:flex;
+  align-items:center;justify-content:center;padding:24px}
+
+.card{
+  width:480px;max-width:100%;
+  background:linear-gradient(160deg,rgba(8,16,30,.97),rgba(4,9,18,.98));
+  border:1px solid rgba(0,200,255,.12);border-radius:22px;
+  padding:40px 38px 34px;
+  box-shadow:0 0 0 1px rgba(0,200,255,.04),0 36px 80px rgba(0,0,0,.75),
+    inset 0 1px 0 rgba(0,200,255,.09),0 0 60px rgba(0,200,255,.03);
+  animation:ci .55s cubic-bezier(.34,1.4,.64,1) both;
+  position:relative;
+}
+@keyframes ci{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:none}}
+.card::before{content:'';position:absolute;top:14px;left:14px;width:14px;height:14px;
+  border-top:2px solid rgba(0,200,255,.55);border-left:2px solid rgba(0,200,255,.55);border-radius:3px 0 0 0}
+.card::after{content:'';position:absolute;bottom:14px;right:14px;width:14px;height:14px;
+  border-bottom:2px solid rgba(0,200,255,.55);border-right:2px solid rgba(0,200,255,.55);border-radius:0 0 3px 0}
+
+.logo{text-align:center;margin-bottom:26px}
+.logo-icon{width:60px;height:60px;margin:0 auto 13px;
+  background:linear-gradient(135deg,rgba(0,200,255,.1),rgba(168,85,247,.07));
+  border:1px solid rgba(0,200,255,.22);border-radius:15px;
+  display:flex;align-items:center;justify-content:center;
+  animation:ig 3s ease-in-out infinite;flex-shrink:0}
+@keyframes ig{0%,100%{box-shadow:0 0 14px rgba(0,200,255,.1)}
+  50%{box-shadow:0 0 30px rgba(0,200,255,.22)}}
+.logo-icon svg{width:30px;height:30px;display:block}
+.logo-name{font-family:'Orbitron',monospace;font-size:17px;font-weight:900;letter-spacing:3.5px;
+  background:linear-gradient(135deg,#fff 20%,#00c8ff 60%,#a855f7);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  background-size:200%;animation:ns 5s ease-in-out infinite}
+@keyframes ns{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.logo-sub{font-size:11px;color:#3d4f6a;letter-spacing:1.8px;margin-top:4px;text-transform:uppercase}
+
+/* Plan Badge */
+.plan-badge{
+  display:flex;align-items:center;gap:9px;padding:10px 14px;
+  background:rgba(0,200,255,.04);border:1px solid rgba(0,200,255,.11);
+  border-radius:9px;font-size:12px;color:#7a8fb5;margin-bottom:18px;
+  animation:ci .55s .1s both}
+.plan-badge b{color:#00c8ff}
+
+.divider{display:flex;align-items:center;gap:10px;margin:0 0 20px;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#3d4f6a}
+.divider::before,.divider::after{content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,200,255,.12),transparent)}
+
+.flash{padding:10px 14px;border-radius:9px;margin-bottom:14px;font-size:13px;
+  font-weight:500;display:flex;align-items:center;gap:8px;
+  animation:fi .3s ease both}
+@keyframes fi{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.flash-err{background:rgba(255,62,108,.07);border:1px solid rgba(255,62,108,.2);color:#ff6b8a}
+.flash-ok{background:rgba(0,255,163,.07);border:1px solid rgba(0,255,163,.2);color:#00ffa3}
+
+/* 2-col */
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:460px){.row2{grid-template-columns:1fr}}
+
+.field{margin-bottom:15px}
+.flbl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.9px;color:#7a8fb5;margin-bottom:6px}
+.finp-wrap{position:relative}
+.ficon{position:absolute;left:13px;top:50%;transform:translateY(-50%);
+  color:#3d4f6a;transition:color .2s;pointer-events:none;line-height:0}
+.ficon svg{width:15px;height:15px;display:block}
+.finp{width:100%;padding:12px 12px 12px 38px;
+  background:rgba(0,200,255,.025);border:1px solid rgba(255,255,255,.07);
+  border-radius:10px;color:#e8eaf0;font-size:13px;font-family:'Space Grotesk',sans-serif;
+  outline:none;transition:all .2s}
+.finp:focus{border-color:rgba(0,200,255,.35);background:rgba(0,200,255,.04);
+  box-shadow:0 0 0 3px rgba(0,200,255,.07)}
+.finp::placeholder{color:#3d4f6a}
+.fline{position:absolute;bottom:-1px;left:10%;right:10%;height:2px;
+  background:linear-gradient(90deg,#00c8ff,#a855f7);border-radius:1px;
+  transform:scaleX(0);transform-origin:center;transition:transform .3s cubic-bezier(.34,1.4,.64,1)}
+.finp:focus~.fline{transform:scaleX(1)}
+
+/* Password strength */
+.pwd-row{display:flex;gap:4px;margin-top:7px}
+.pwd-seg{flex:1;height:3px;background:rgba(255,255,255,.06);border-radius:2px;transition:background .3s}
+.pwd-hint{font-size:10px;color:#3d4f6a;text-align:right;margin-top:4px;transition:color .3s}
+
+.sbtn{
+  width:100%;padding:14px;margin-top:8px;
+  background:linear-gradient(135deg,rgba(0,200,255,.9),rgba(0,175,215,.9));
+  border:none;border-radius:11px;color:#000;font-size:14px;font-weight:700;
+  font-family:'Space Grotesk',sans-serif;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .22s;position:relative;overflow:hidden}
+.sbtn::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
+  transform:translateX(-120%);transition:transform .45s}
+.sbtn:hover::before{transform:translateX(120%)}
+.sbtn:hover{box-shadow:0 0 28px rgba(0,200,255,.28),0 8px 22px rgba(0,0,0,.3);transform:translateY(-1px)}
+.sbtn:active{transform:none}
+
+.dots{display:none;gap:5px;align-items:center}
+.dot{width:5px;height:5px;border-radius:50%;background:#000;
+  animation:db .6s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.12s}
+.dot:nth-child(3){animation-delay:.24s}
+@keyframes db{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+.foot{text-align:center;margin-top:20px;padding-top:18px;
+  border-top:1px solid rgba(255,255,255,.05);font-size:13px;color:#7a8fb5}
+.foot a{color:#00c8ff;text-decoration:none;font-weight:600;transition:all .15s}
+.foot a:hover{text-shadow:0 0 10px rgba(0,200,255,.5)}
+
+.credit{position:fixed;bottom:14px;width:100%;text-align:center;
+  font-size:11px;color:#2a3a52;z-index:10}
+.credit a{color:rgba(0,200,255,.4);text-decoration:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="grid"></div>
+<div class="scan"></div>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+<div class="orb o3"></div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="16,2 30,9 30,23 16,30 2,23 2,9" fill="none" stroke="#00c8ff" stroke-width="1.4"/>
+          <polygon points="16,8 24,13 24,19 16,24 8,19 8,13" fill="rgba(0,200,255,0.07)" stroke="rgba(0,200,255,0.35)" stroke-width="1"/>
+          <path d="M11 16 L16 8 L21 16 L16 24 Z" fill="rgba(0,200,255,0.14)" stroke="#00c8ff" stroke-width=".9"/>
+          <circle cx="16" cy="16" r="2.5" fill="#00c8ff"/>
+          <circle cx="16" cy="16" r="5" fill="none" stroke="rgba(0,200,255,0.28)" stroke-width=".8"/>
+        </svg>
+      </div>
+      <div class="logo-name">ANSHHOSTING</div>
+      <div class="logo-sub">Create Your Account</div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat,msg in messages %}
+      <div class="flash {{ 'flash-err' if cat=='error' else 'flash-ok' }}">
+        <span>{{ '⚠' if cat=='error' else '✓' }}</span>{{ msg }}
+      </div>
+      {% endfor %}
+    {% endwith %}
+
+    <div class="plan-badge">
+      🎁 Free Plan: <b>10MB storage · 2 projects</b> — upgrade anytime via admin
+    </div>
+
+    <div class="divider">Account Details</div>
+
+    <form method="POST" id="rf">
+      <div class="row2">
+        <div class="field">
+          <label class="flbl">Username</label>
+          <div class="finp-wrap">
+            <span class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+            <input type="text" name="username" class="finp" placeholder="username" required autocomplete="username">
+            <div class="fline"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="flbl">Email</label>
+          <div class="finp-wrap">
+            <span class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+            <input type="email" name="email" class="finp" placeholder="you@email.com" required>
+            <div class="fline"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="flbl">Password</label>
+        <div class="finp-wrap">
+          <span class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          <input type="password" name="password" class="finp" id="pi" placeholder="Min 6 characters" required autocomplete="new-password">
+          <div class="fline"></div>
+        </div>
+        <div class="pwd-row">
+          <div class="pwd-seg" id="s1"></div>
+          <div class="pwd-seg" id="s2"></div>
+          <div class="pwd-seg" id="s3"></div>
+          <div class="pwd-seg" id="s4"></div>
+        </div>
+        <div class="pwd-hint" id="ph"></div>
+      </div>
+
+      <div class="field">
+        <label class="flbl">Confirm Password</label>
+        <div class="finp-wrap">
+          <span class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></span>
+          <input type="password" name="confirm" class="finp" id="ci" placeholder="Repeat password" required autocomplete="new-password">
+          <div class="fline"></div>
+        </div>
+      </div>
+
+      <button type="submit" class="sbtn" id="sb">
+        <span id="st">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block;vertical-align:middle;margin-right:5px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Create Account
+        </span>
+        <div class="dots" id="dl"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      </button>
+    </form>
+    <div class="foot">Already have an account? <a href="{{ url_for('login') }}">Sign In →</a></div>
+  </div>
+</div>
+<div class="credit">Developed by <a href="https://t.me/crystaapi" target="_blank">AnshAPI</a></div>
+
+<script>
+/* CANVAS */
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+let W,H,ns=[];
+function sz(){W=cv.width=innerWidth;H=cv.height=innerHeight}
+sz();addEventListener('resize',sz);
+function mk(){return{x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.42,vy:(Math.random()-.5)*.42,r:Math.random()*1.7+.7,a:Math.random()*.8+.2}}
+for(let i=0;i<72;i++)ns.push(mk());
+(function frame(){
+  cx.clearRect(0,0,W,H);
+  ns.forEach(n=>{
+    n.x+=n.vx;n.y+=n.vy;
+    if(n.x<0||n.x>W)n.vx*=-1;
+    if(n.y<0||n.y>H)n.vy*=-1;
+    cx.beginPath();cx.arc(n.x,n.y,n.r,0,Math.PI*2);
+    cx.fillStyle=`rgba(0,200,255,${n.a*.28})`;cx.fill();
+  });
+  for(let i=0;i<ns.length;i++){
+    for(let j=i+1;j<ns.length;j++){
+      const dx=ns[i].x-ns[j].x,dy=ns[i].y-ns[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<135){cx.beginPath();cx.moveTo(ns[i].x,ns[i].y);cx.lineTo(ns[j].x,ns[j].y);
+        cx.strokeStyle=`rgba(0,200,255,${(1-d/135)*.1})`;cx.lineWidth=.65;cx.stroke()}
+    }
+  }
+  requestAnimationFrame(frame);
+})();
+
+/* PASSWORD STRENGTH */
+const segs=['s1','s2','s3','s4'].map(id=>document.getElementById(id));
+const colors=['#ff3e6c','#ffb800','#00c8ff','#00ffa3'];
+const labels=['Weak','Fair','Good','Strong'];
+document.getElementById('pi').addEventListener('input',function(){
+  const v=this.value;
+  let s=0;
+  if(v.length>=6)s++;
+  if(v.length>=10)s++;
+  if(/[A-Z]/.test(v)&&/[0-9]/.test(v))s++;
+  if(/[!@#$%^&*]/.test(v))s++;
+  segs.forEach((seg,i)=>{seg.style.background=i<s?colors[Math.min(s-1,3)]:'rgba(255,255,255,.06)'});
+  const ph=document.getElementById('ph');
+  ph.textContent=v.length?(labels[Math.min(s-1,3)]||''):'';
+  ph.style.color=colors[Math.min(s-1,3)]||'#3d4f6a';
+});
+
+/* CONFIRM MATCH */
+document.getElementById('ci').addEventListener('input',function(){
+  const match=this.value===document.getElementById('pi').value;
+  this.style.borderColor=this.value?(match?'rgba(0,255,163,.4)':'rgba(255,62,108,.4)'):'rgba(255,255,255,.07)';
+});
+
+/* SUBMIT */
+document.getElementById('rf').addEventListener('submit',()=>{
+  document.getElementById('st').style.display='none';
+  document.getElementById('dl').style.display='flex';
+});
+
+/* ICON FOCUS */
+document.querySelectorAll('.finp').forEach(inp=>{
+  const ico=inp.closest('.finp-wrap').querySelector('.ficon');
+  inp.addEventListener('focus',()=>ico.style.color='#00c8ff');
+  inp.addEventListener('blur',()=>ico.style.color='#3d4f6a');
+});
+
+/* TILT */
+const card=document.querySelector('.card');
+document.addEventListener('mousemove',e=>{
+  const x=(e.clientX/W-.5)*8,y=(e.clientY/H-.5)*8;
+  card.style.transform=`perspective(900px) rotateY(${x*.26}deg) rotateX(${-y*.26}deg)`;
+});
+document.addEventListener('mouseleave',()=>card.style.transform='');
+</script>
+</body>
+</html>

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ANSHHOSTING — Cloud Deployment Platform</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+<style>
+/* ── HOME PAGE EXTRA STYLES ── */
+.home-body{background:var(--bg0);min-height:100vh;overflow-x:hidden}
+
+/* NAV */
+.home-nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:16px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(3,5,8,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:12px}
+.nav-logo-icon{width:36px;height:36px;background:linear-gradient(135deg,rgba(0,200,255,0.2),rgba(168,85,247,0.15));border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.nav-brand{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;letter-spacing:3px;background:linear-gradient(135deg,#fff,var(--c0));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;align-items:center;gap:8px}
+.nav-link{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;color:var(--txt2);text-decoration:none;transition:all 0.15s}
+.nav-link:hover{color:var(--txt);background:rgba(255,255,255,0.05)}
+
+/* HERO */
+.hero{padding:160px 48px 100px;text-align:center;position:relative;overflow:hidden}
+.hero-glow{position:absolute;top:0;left:50%;transform:translateX(-50%);width:800px;height:500px;background:radial-gradient(ellipse,rgba(0,200,255,0.07) 0%,transparent 65%);pointer-events:none}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,200,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,0.03) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black,transparent)}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:20px;font-size:12px;font-weight:600;color:var(--c0);margin-bottom:28px;letter-spacing:0.5px}
+.hero-badge-dot{width:6px;height:6px;background:var(--c1);border-radius:50%;animation:blink 2s infinite}
+.hero-title{font-family:'Orbitron',monospace;font-size:clamp(36px,6vw,72px);font-weight:900;line-height:1.05;letter-spacing:-1px;margin-bottom:24px}
+.hero-title span{background:linear-gradient(135deg,var(--c0),var(--c4));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:clamp(14px,2vw,18px);color:var(--txt2);max-width:640px;margin:0 auto 40px;line-height:1.7}
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+.hero-note{margin-top:20px;font-size:12px;color:var(--txt3)}
+.hero-note a{color:var(--c0);text-decoration:none}
+
+/* STATS STRIP */
+.stats-strip{display:flex;justify-content:center;gap:0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(10,16,24,0.5)}
+.strip-item{flex:1;max-width:220px;padding:28px 20px;text-align:center;border-right:1px solid var(--border)}
+.strip-item:last-child{border-right:none}
+.strip-num{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;color:var(--c0);margin-bottom:4px}
+.strip-lbl{font-size:12px;color:var(--txt3);letter-spacing:0.5px}
+
+/* FEATURES */
+.section{padding:80px 48px;max-width:1200px;margin:0 auto}
+.section-eyebrow{font-size:11px;font-weight:700;color:var(--c0);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+.section-title{font-size:clamp(24px,3.5vw,40px);font-weight:800;letter-spacing:-0.5px;margin-bottom:16px}
+.section-sub{font-size:15px;color:var(--txt2);max-width:560px;line-height:1.7}
+
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:48px}
+.feat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;transition:all 0.2s;position:relative;overflow:hidden}
+.feat-card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,0.4)}
+.feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--c0),transparent);opacity:0;transition:opacity 0.2s}
+.feat-card:hover::before{opacity:1}
+.feat-ico{font-size:28px;margin-bottom:14px}
+.feat-title{font-size:15px;font-weight:700;margin-bottom:8px}
+.feat-desc{font-size:13px;color:var(--txt2);line-height:1.7}
+
+/* PRICING */
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:48px}
+.price-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;position:relative}
+.price-card.featured{border-color:rgba(0,200,255,0.3);background:linear-gradient(135deg,rgba(0,200,255,0.05),rgba(168,85,247,0.03))}
+.price-card.featured::before{content:'MOST POPULAR';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,var(--c0),var(--c4));color:#000;font-size:10px;font-weight:800;letter-spacing:1.5px;padding:4px 16px;border-radius:0 0 8px 8px}
+.price-plan{font-size:12px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.price-val{font-family:'Orbitron',monospace;font-size:36px;font-weight:900;margin-bottom:4px}
+.price-period{font-size:12px;color:var(--txt3)}
+.price-divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+.price-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.price-features li{font-size:13px;color:var(--txt2);display:flex;align-items:center;gap:8px}
+.price-features li::before{content:'✓';color:var(--c1);font-weight:700;flex-shrink:0}
+.price-features li.no::before{content:'✗';color:var(--txt3)}
+
+/* HOW IT WORKS */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px;margin-top:48px;position:relative}
+.step{text-align:center;padding:24px}
+.step-num{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,rgba(0,200,255,0.15),rgba(168,85,247,0.1));border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--c0);margin:0 auto 16px}
+.step-title{font-size:14px;font-weight:700;margin-bottom:8px}
+.step-desc{font-size:12px;color:var(--txt2);line-height:1.7}
+
+/* DOCS */
+.docs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:48px}
+.doc-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;transition:all 0.15s;text-decoration:none;display:block}
+.doc-card:hover{border-color:var(--border2);background:rgba(0,200,255,0.04)}
+.doc-title{font-size:14px;font-weight:700;color:var(--txt);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.doc-desc{font-size:12px;color:var(--txt2);line-height:1.6}
+.doc-tag{padding:2px 8px;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.15);border-radius:4px;font-size:10px;font-weight:700;color:var(--c0);margin-left:auto}
+
+/* TERMINAL DEMO */
+.demo-term{background:#020504;border:1px solid rgba(0,255,100,0.15);border-radius:12px;overflow:hidden;max-width:700px;margin:40px auto 0}
+.demo-bar{background:#080e07;padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,255,100,0.08)}
+.demo-body{padding:20px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.9}
+.dc-g{color:#00ff88}.dc-b{color:#61dafb}.dc-y{color:#ffb800}.dc-r{color:#ff6b6b}.dc-w{color:#7a8fb5}
+
+/* FOOTER */
+.home-footer{border-top:1px solid var(--border);padding:48px;text-align:center}
+.footer-logo{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;letter-spacing:4px;background:linear-gradient(135deg,#fff,var(--c0));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
+.footer-credit{font-size:13px;color:var(--txt2);margin-bottom:8px}
+.footer-credit a{color:var(--c0);text-decoration:none;font-weight:600}
+.footer-credit a:hover{text-decoration:underline}
+.footer-links{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-top:16px}
+.footer-link{font-size:12px;color:var(--txt3);text-decoration:none;transition:color 0.15s}
+.footer-link:hover{color:var(--c0)}
+.footer-copy{margin-top:24px;font-size:11px;color:var(--txt3)}
+
+@media(max-width:768px){.hero{padding:120px 24px 60px}.section{padding:60px 24px}.stats-strip{flex-wrap:wrap}.strip-item{min-width:50%;border-right:none;border-bottom:1px solid var(--border)}.home-nav{padding:14px 20px}}
+</style>
+</head>
+<body class="home-body">
+
+<!-- NAV -->
+<nav class="home-nav">
+  <div class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 30 30" fill="none" width="20" height="20"><polygon points="15,2 28,9 28,21 15,28 2,21 2,9" fill="none" stroke="#00c8ff" stroke-width="1.5"/><path d="M10 15 L15 8 L20 15 L15 22 Z" fill="rgba(0,200,255,0.3)" stroke="#00c8ff" stroke-width="1"/><circle cx="15" cy="15" r="2" fill="#00c8ff"/></svg>
+    </div>
+    <span class="nav-brand">ANSHHOSTING</span>
+  </div>
+  <div class="nav-links">
+    <a href="#features" class="nav-link">Features</a>
+    <a href="#how" class="nav-link">How it Works</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="#docs" class="nav-link">Docs</a>
+    <a href="{{ url_for('login') }}" class="btn btn-ghost btn-sm">Login</a>
+    <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">Get Started</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-grid"></div>
+  <div style="position:relative;z-index:1">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      NOW LIVE — Deploy Python & Node.js Apps Instantly
+    </div>
+    <h1 class="hero-title">
+      Deploy Your Code.<br>
+      <span>Zero Complexity.</span>
+    </h1>
+    <p class="hero-sub">
+      ANSHHOSTING is a self-hosted cloud panel — upload your Python or Node.js project,
+      and we handle everything: install dependencies, auto-start your server, live logs, and port management.
+    </p>
+    <div class="hero-actions">
+      <a href="{{ url_for('register') }}" class="btn btn-primary" style="padding:14px 28px;font-size:15px">
+        🚀 Start Free — No Credit Card
+      </a>
+      <a href="#how" class="btn btn-ghost" style="padding:14px 28px;font-size:15px">
+        See How It Works →
+      </a>
+    </div>
+    <div class="hero-note">
+      Free plan: 10MB storage &nbsp;•&nbsp; Need help?
+      <a href="https://t.me/crystaapi" target="_blank">DM @crystaapi on Telegram</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="strip-item"><div class="strip-num">2</div><div class="strip-lbl">Languages Supported</div></div>
+  <div class="strip-item"><div class="strip-num">10MB</div><div class="strip-lbl">Free Storage</div></div>
+  <div class="strip-item"><div class="strip-num">200</div><div class="strip-lbl">Ports Available</div></div>
+  <div class="strip-item"><div class="strip-num">Auto</div><div class="strip-lbl">Dep. Installation</div></div>
+  <div class="strip-item"><div class="strip-num">Live</div><div class="strip-lbl">Terminal Logs</div></div>
+</div>
+
+<!-- TERMINAL DEMO -->
+<div style="padding:60px 48px 0;max-width:1200px;margin:0 auto">
+  <div class="demo-term">
+    <div class="demo-bar">
+      <div style="width:12px;height:12px;border-radius:50%;background:#ff5f57"></div>
+      <div style="width:12px;height:12px;border-radius:50%;background:#ffbd2e"></div>
+      <div style="width:12px;height:12px;border-radius:50%;background:#28c840"></div>
+      <span style="margin-left:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(0,255,100,0.4)">anshhosting — live deploy log</span>
+    </div>
+    <div class="demo-body">
+      <div><span class="dc-w">[14:30:11]</span> <span class="dc-b">[INFO]</span> <span class="dc-g">╔══ DEPLOYED: my-flask-app ══╗</span></div>
+      <div><span class="dc-w">[14:30:11]</span> <span class="dc-b">[INFO]</span> Language: python | Entry: app.py | Port: 5001</div>
+      <div><span class="dc-w">[14:30:11]</span> <span class="dc-b">[INFO]</span> Creating virtual environment...</div>
+      <div><span class="dc-w">[14:30:12]</span> <span class="dc-b">[INFO]</span> venv created ✓</div>
+      <div><span class="dc-w">[14:30:12]</span> <span class="dc-b">[INFO]</span> Installing: pip install -r requirements.txt ...</div>
+      <div><span class="dc-w">[14:30:18]</span> <span class="dc-g">[OUT ]</span> Successfully installed Flask-3.0.0 Werkzeug-3.0.1</div>
+      <div><span class="dc-w">[14:30:18]</span> <span class="dc-b">[INFO]</span> <span class="dc-g">✅ Dependencies installed successfully!</span></div>
+      <div><span class="dc-w">[14:30:18]</span> <span class="dc-b">[INFO]</span> ─── Starting project automatically ───</div>
+      <div><span class="dc-w">[14:30:19]</span> <span class="dc-g">[OUT ]</span>  * Running on http://0.0.0.0:5001</div>
+      <div><span class="dc-w">[14:30:19]</span> <span class="dc-b">[INFO]</span> <span class="dc-g">🚀 Project auto-started on port 5001</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-eyebrow">Platform Features</div>
+  <h2 class="section-title">Everything you need to ship fast</h2>
+  <p class="section-sub">A complete hosting panel built for developers who want deployment without the DevOps headache.</p>
+  <div class="feat-grid">
+    <div class="feat-card"><div class="feat-ico">🐍</div><div class="feat-title">Python Hosting</div><div class="feat-desc">Upload any Flask, FastAPI, Django or plain Python script. Auto venv creation, pip install, and smart entry file detection.</div></div>
+    <div class="feat-card"><div class="feat-ico">💚</div><div class="feat-title">Node.js Hosting</div><div class="feat-desc">Express, Fastify, plain Node. Automatic npm install from package.json. Works on Windows, Linux, and macOS.</div></div>
+    <div class="feat-card"><div class="feat-ico">📦</div><div class="feat-title">ZIP Deployment</div><div class="feat-desc">Upload a .zip archive of your entire project. We extract, detect the language, ask which file to run, and deploy automatically.</div></div>
+    <div class="feat-card"><div class="feat-ico">⚡</div><div class="feat-title">Auto Deploy & Start</div><div class="feat-desc">Once you choose your entry file, dependencies install automatically and your project starts running — no extra steps.</div></div>
+    <div class="feat-card"><div class="feat-ico">📟</div><div class="feat-title">Live Terminal Logs</div><div class="feat-desc">Real-time stdout/stderr log viewer in your browser. Color-coded levels, auto-scroll, and 1-second refresh.</div></div>
+    <div class="feat-card"><div class="feat-ico">🔌</div><div class="feat-title">Unique Port Per App</div><div class="feat-desc">Each project gets its own port from 5001–5200. Access your live app directly at localhost:PORT while developing.</div></div>
+    <div class="feat-card"><div class="feat-ico">⚙</div><div class="feat-title">Full Process Control</div><div class="feat-desc">Start, stop, restart with one click. View uptime, memory usage, and process status from the dashboard.</div></div>
+    <div class="feat-card"><div class="feat-ico">📁</div><div class="feat-title">File Manager</div><div class="feat-desc">Browse, upload, and delete project files directly in the browser. No FTP or SSH needed.</div></div>
+    <div class="feat-card"><div class="feat-ico">🛡</div><div class="feat-title">Military-Grade Security</div><div class="feat-desc">Path traversal prevention, file type whitelist, 200MB upload cap, session security, and SHA-256 password hashing.</div></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section style="background:rgba(6,10,15,0.5);border-top:1px solid var(--border);border-bottom:1px solid var(--border)" id="how">
+  <div class="section" style="padding-top:60px;padding-bottom:60px">
+    <div class="section-eyebrow">Deployment Flow</div>
+    <h2 class="section-title">Ship in 4 simple steps</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">01</div><div class="step-title">Register & Login</div><div class="step-desc">Create your account. First user becomes admin automatically. Everyone gets 10MB free storage.</div></div>
+      <div class="step"><div class="step-num">02</div><div class="step-num" style="display:none">→</div><div class="step-title">Upload Your Project</div><div class="step-desc">Drop a .py, .js, or .zip file. Give it a project name and optional description.</div></div>
+      <div class="step"><div class="step-num">03</div><div class="step-title">Choose Entry File</div><div class="step-desc">We detect your language and show available files. You pick which one to run (main.py, app.py, index.js…).</div></div>
+      <div class="step"><div class="step-num">04</div><div class="step-title">Watch It Deploy</div><div class="step-desc">Dependencies auto-install, your app auto-starts. Watch it all happen live in the terminal log.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="section-eyebrow">Plans & Pricing</div>
+  <h2 class="section-title">Start free, scale when ready</h2>
+  <p class="section-sub">Contact admin to upgrade your account to paid for unlimited storage and projects.</p>
+  <div class="price-grid">
+    <div class="price-card">
+      <div class="price-plan">Free Tier</div>
+      <div class="price-val txt-c1">₹0</div>
+      <div class="price-period">forever</div>
+      <hr class="price-divider">
+      <ul class="price-features">
+        <li>10 MB storage</li>
+        <li>Python & Node.js hosting</li>
+        <li>Live terminal logs</li>
+        <li>File manager</li>
+        <li>Start / Stop / Restart</li>
+        <li class="no">Unlimited storage</li>
+        <li class="no">Priority support</li>
+      </ul>
+      <a href="{{ url_for('register') }}" class="btn btn-ghost w100">Get Started Free</a>
+    </div>
+    <div class="price-card featured">
+      <div class="price-plan">Paid Plan</div>
+      <div class="price-val txt-c0">Custom</div>
+      <div class="price-period">contact admin</div>
+      <hr class="price-divider">
+      <ul class="price-features">
+        <li>Unlimited storage</li>
+        <li>Python & Node.js hosting</li>
+        <li>Live terminal logs</li>
+        <li>File manager</li>
+        <li>Start / Stop / Restart</li>
+        <li>Priority support</li>
+        <li>Admin assistance</li>
+      </ul>
+      <a href="https://t.me/crystaapi" target="_blank" class="btn btn-primary w100">DM @crystaapi</a>
+    </div>
+    <div class="price-card">
+      <div class="price-plan">Admin Account</div>
+      <div class="price-val" style="color:var(--c3)">⚡</div>
+      <div class="price-period">first registered user</div>
+      <hr class="price-divider">
+      <ul class="price-features">
+        <li>Unlimited everything</li>
+        <li>User management</li>
+        <li>All projects visible</li>
+        <li>Server resource stats</li>
+        <li>Set user plans</li>
+        <li>Delete any project</li>
+        <li>Full admin panel</li>
+      </ul>
+      <a href="{{ url_for('login') }}" class="btn btn-ghost w100">Admin Login</a>
+    </div>
+  </div>
+</section>
+
+<!-- DOCS -->
+<section style="background:rgba(6,10,15,0.5);border-top:1px solid var(--border);border-bottom:1px solid var(--border)" id="docs">
+  <div class="section" style="padding-top:60px;padding-bottom:60px">
+    <div class="section-eyebrow">Documentation</div>
+    <h2 class="section-title">Quick Reference</h2>
+    <div class="docs-grid">
+      <div class="doc-card">
+        <div class="doc-title">🐍 Python Quick Start <span class="doc-tag">PYTHON</span></div>
+        <div class="doc-desc">
+          Create <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:11px">main.py</code> with your app. Add
+          <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:11px">requirements.txt</code> for packages.
+          Use <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:11px">os.environ['PORT']</code> to get your assigned port.
+          Zip folder and upload.
+        </div>
+      </div>
+      <div class="doc-card">
+        <div class="doc-title">💚 Node.js Quick Start <span class="doc-tag">NODE</span></div>
+        <div class="doc-desc">
+          Create <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:11px">index.js</code>.
+          Add <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:11px">package.json</code> for npm deps.
+          Use <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:11px">process.env.PORT</code> for port.
+          Zip and upload.
+        </div>
+      </div>
+      <div class="doc-card">
+        <div class="doc-title">📦 ZIP Structure <span class="doc-tag">STRUCTURE</span></div>
+        <div class="doc-desc">
+          Your zip can contain a flat folder or a single top-level subfolder — we auto-flatten it.
+          Entry file must be in root of the project (not in subfolders).
+        </div>
+      </div>
+      <div class="doc-card">
+        <div class="doc-title">🔌 Port & URL <span class="doc-tag">NETWORK</span></div>
+        <div class="doc-desc">
+          Each project gets a unique port 5001–5200. The platform itself runs on port 5000.
+          Access your app at <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:11px">http://localhost:PORT</code>
+        </div>
+      </div>
+      <div class="doc-card">
+        <div class="doc-title">⚡ Auto Deploy Flow <span class="doc-tag">DEPLOY</span></div>
+        <div class="doc-desc">
+          1. Upload file → 2. Pick entry file → 3. Deps auto-install → 4. Project auto-starts.
+          Watch everything live in the terminal log viewer.
+        </div>
+      </div>
+      <div class="doc-card">
+        <div class="doc-title">🛡 Security Notes <span class="doc-tag">SECURITY</span></div>
+        <div class="doc-desc">
+          Passwords hashed with SHA-256. File uploads restricted to safe types.
+          Path traversal prevented. 200MB max upload. Session-based auth with 24h expiry.
+        </div>
+      </div>
+    </div>
+
+    <!-- Code examples -->
+    <div class="demo-term" style="margin-top:32px;max-width:100%">
+      <div class="demo-bar">
+        <div style="width:12px;height:12px;border-radius:50%;background:#ff5f57"></div>
+        <div style="width:12px;height:12px;border-radius:50%;background:#ffbd2e"></div>
+        <div style="width:12px;height:12px;border-radius:50%;background:#28c840"></div>
+        <span style="margin-left:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(0,255,100,0.4)">example — main.py (Flask)</span>
+      </div>
+      <div class="demo-body" style="height:auto">
+        <div><span class="dc-b">import</span> <span class="dc-g">os</span></div>
+        <div><span class="dc-b">from</span> <span class="dc-g">flask</span> <span class="dc-b">import</span> Flask</div>
+        <div>&nbsp;</div>
+        <div>app = Flask(<span class="dc-y">__name__</span>)</div>
+        <div>&nbsp;</div>
+        <div><span class="dc-b">@app.route</span>(<span class="dc-y">'/'</span>)</div>
+        <div><span class="dc-b">def</span> <span class="dc-g">home</span>():</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dc-b">return</span> <span class="dc-y">"Hello from ANSHHOSTING! 🚀"</span></div>
+        <div>&nbsp;</div>
+        <div><span class="dc-b">if</span> __name__ == <span class="dc-y">'__main__'</span>:</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;port = <span class="dc-b">int</span>(os.environ.get(<span class="dc-y">'PORT'</span>, <span class="dc-y">5001</span>))</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;app.run(host=<span class="dc-y">'0.0.0.0'</span>, port=port)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:80px 48px;text-align:center">
+  <h2 style="font-family:'Orbitron',monospace;font-size:clamp(22px,4vw,42px);font-weight:900;margin-bottom:16px">Ready to deploy?</h2>
+  <p style="font-size:16px;color:var(--txt2);margin-bottom:32px">Register in seconds. First deployment in minutes.</p>
+  <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap">
+    <a href="{{ url_for('register') }}" class="btn btn-primary" style="padding:14px 32px;font-size:15px">Create Free Account →</a>
+    <a href="https://t.me/crystaapi" target="_blank" class="btn btn-ghost" style="padding:14px 32px;font-size:15px">📱 Telegram Support</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="home-footer">
+  <div class="footer-logo">ANSHHOSTING</div>
+  <div class="footer-credit">
+    Built & Developed by <a href="https://t.me/crystaapi" target="_blank">AnshAPI</a>
+    &nbsp;•&nbsp; For help & support: <a href="https://t.me/crystaapi" target="_blank">t.me/crystaapi</a>
+  </div>
+  <div class="footer-links">
+    <a href="#features" class="footer-link">Features</a>
+    <a href="#pricing" class="footer-link">Pricing</a>
+    <a href="#docs" class="footer-link">Documentation</a>
+    <a href="{{ url_for('login') }}" class="footer-link">Login</a>
+    <a href="{{ url_for('register') }}" class="footer-link">Register</a>
+    <a href="https://t.me/crystaapi" target="_blank" class="footer-link">📱 Telegram</a>
+  </div>
+  <div class="footer-copy">© 2024 ANSHHOSTING — Developed by AnshAPI • t.me/crystaapi • All rights reserved</div>
+</footer>
+
+</body></html>

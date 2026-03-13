@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deploy from GitHub — ANSHHOSTING</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+</head>
+<body>
+<div class="shell">
+<aside class="sidebar">
+  <div class="sb-logo"><div class="sb-icon"><svg viewBox="0 0 30 30" fill="none" width="22" height="22"><polygon points="15,2 28,9 28,21 15,28 2,21 2,9" fill="none" stroke="#00c8ff" stroke-width="1.5"/><path d="M10 15 L15 8 L20 15 L15 22 Z" fill="rgba(0,200,255,0.3)" stroke="#00c8ff" stroke-width="1"/><circle cx="15" cy="15" r="2" fill="#00c8ff"/></svg></div><div><div class="sb-wordmark">ANSHHOSTING</div><div class="sb-tagline">CLOUD PLATFORM</div></div></div>
+  <nav class="sb-nav">
+    <div class="sb-section"><div class="sb-section-label">Navigation</div>
+      <a href="{{ url_for('dashboard') }}" class="sb-item"><span class="ico">⊞</span> Dashboard</a>
+      <a href="{{ url_for('deploy') }}" class="sb-item"><span class="ico">↑</span> Upload File</a>
+      <a href="{{ url_for('deploy_github') }}" class="sb-item active"><span class="ico">⎇</span> GitHub Deploy</a>
+    </div>
+    {% if session.get('is_admin') %}<div class="sb-section"><div class="sb-section-label">Admin</div><a href="{{ url_for('admin') }}" class="sb-item"><span class="ico">⚙</span> Admin Panel</a></div>{% endif %}
+  </nav>
+  <div class="sb-user"><div class="user-tile"><div class="user-av">{{ session.username[0].upper() }}</div><div><div class="user-nm">{{ session.username }}</div></div><a href="{{ url_for('logout') }}" class="user-logout">⏻</a></div></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="page-hd"><h1>⎇ Deploy from GitHub</h1><p>Clone any public GitHub repository and deploy it</p></div>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-ghost btn-sm">← Back</a>
+  </div>
+
+  <div class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat,msg in messages %}<div class="alert alert-{{ 'error' if cat=='error' else 'success' }}">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+
+    {% if not git_available %}
+    <div class="alert alert-warn">
+      ⚠ <strong>git is not installed</strong> on this server. Run: <code style="background:var(--bg3);padding:2px 6px;border-radius:4px">apt-get install git</code> then restart the panel.
+    </div>
+    {% endif %}
+
+    <div class="grid2" style="gap:24px;align-items:start">
+      <div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">⎇ GitHub Repository</div><div class="card-sub">Deploy any public GitHub repo instantly</div></div>
+          <form method="POST" id="gh-form">
+            <div class="form-row">
+              <label class="form-label">Project Name</label>
+              <input type="text" name="project_name" class="form-input" placeholder="my-github-project" required>
+            </div>
+            <div class="form-row">
+              <label class="form-label">GitHub Repository URL</label>
+              <input type="text" name="repo_url" class="form-input" id="repo-inp"
+                     placeholder="https://github.com/user/repo  OR  user/repo" required
+                     oninput="previewRepo(this.value)">
+              <div id="repo-preview" style="margin-top:6px;font-size:12px;color:var(--txt3);font-family:'JetBrains Mono',monospace"></div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Branch</label>
+              <input type="text" name="branch" class="form-input" placeholder="main" value="main">
+            </div>
+            <div class="form-row">
+              <label class="form-label">Description (optional)</label>
+              <input type="text" name="description" class="form-input" placeholder="Brief description">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full" id="clone-btn" {% if not git_available %}disabled{% endif %}>
+              ⎇ Clone & Deploy
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" style="border-color:rgba(0,200,255,0.2)">
+          <div class="card-head"><div class="card-title">✅ What happens</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;color:var(--txt2)">
+            <div>1. 🔗 We git clone the repository</div>
+            <div>2. 🔍 Auto-detect language (Python/Node.js)</div>
+            <div>3. 📦 Install dependencies automatically</div>
+            <div>4. 🚀 Start your app on its assigned port</div>
+            <div>5. 📟 Watch it live in the terminal</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">📋 Supported URL formats</div></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.2;color:var(--txt2)">
+            <div><span style="color:var(--c0)">https://github.com/user/repo</span></div>
+            <div><span style="color:var(--c0)">https://github.com/user/repo.git</span></div>
+            <div><span style="color:var(--c1)">user/repo</span> <span style="color:var(--txt3)">(shorthand)</span></div>
+          </div>
+        </div>
+        <div class="card" style="border-color:rgba(255,184,0,0.15)">
+          <div class="card-head"><div class="card-title" style="color:var(--c3)">⚠ Requirements</div></div>
+          <div style="font-size:13px;color:var(--txt2);line-height:1.8">
+            <div>✓ Repository must be <strong>public</strong></div>
+            <div>✓ Must have <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:11px">requirements.txt</code> or <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:11px">package.json</code></div>
+            <div>✓ Entry file must be in root directory</div>
+            <div>✓ Use <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:11px">os.environ['PORT']</code> for port</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<script src="{{ url_for('static',filename='script.js') }}"></script>
+<script>
+function previewRepo(val) {
+  const el = document.getElementById('repo-preview');
+  if (!val) { el.textContent=''; return; }
+  let url = val;
+  if (/^[\w\-]+\/[\w\-\.]+$/.test(val)) url = `https://github.com/${val}.git`;
+  else if (val.includes('github.com') && !val.endsWith('.git')) url = val.replace(/\/?$/,'.git');
+  el.innerHTML = `→ Will clone: <span style="color:var(--c0)">${url}</span>`;
+}
+document.getElementById('gh-form').addEventListener('submit',function(){
+  const b=document.getElementById('clone-btn');
+  b.innerHTML='⏳ Cloning…'; b.disabled=true;
+});
+</script>
+</body></html>

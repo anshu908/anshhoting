@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin — ANSHHOSTING</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+<style>
+/* ── ADMIN EXTRA ─────────────────────────────── */
+.admin-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.b-admin   {background:rgba(255,184,0,.12);border:1px solid rgba(255,184,0,.3);color:var(--c3)}
+.b-premium {background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.3);color:var(--c4)}
+.b-pro     {background:rgba(0,200,255,.12);border:1px solid rgba(0,200,255,.3);color:var(--c0)}
+.b-starter {background:rgba(0,255,163,.12);border:1px solid rgba(0,255,163,.3);color:var(--c1)}
+.b-free    {background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--txt3)}
+.b-custom  {background:rgba(255,107,53,.12);border:1px solid rgba(255,107,53,.3);color:var(--c5)}
+
+/* Grant form */
+.grant-card{
+  background:linear-gradient(135deg,rgba(0,200,255,.05),rgba(168,85,247,.03));
+  border:1px solid rgba(0,200,255,.2);border-radius:var(--r3);padding:22px;
+  position:relative;overflow:hidden;
+}
+.grant-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--c0),var(--c4));animation:shimmer 3s linear infinite;
+  background-size:200% 100%}
+@keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+
+/* Creds box */
+.creds-box{
+  background:linear-gradient(135deg,rgba(255,184,0,.07),rgba(255,107,53,.04));
+  border:1px solid rgba(255,184,0,.25);border-radius:var(--r3);padding:20px;
+  position:relative;overflow:hidden;
+}
+.creds-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--c3),var(--c5))}
+.cred-field{display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06);border-radius:8px}
+.cred-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--txt3);width:80px;flex-shrink:0}
+.cred-value{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--c0);font-weight:600;flex:1}
+.cred-copy-btn{
+  padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;
+  background:rgba(0,200,255,.1);border:1px solid rgba(0,200,255,.2);color:var(--c0);
+  transition:all .15s;flex-shrink:0;
+}
+.cred-copy-btn:hover{background:rgba(0,200,255,.2)}
+
+/* Stats grid */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);
+  padding:16px;position:relative;overflow:hidden;transition:all .2s}
+.stat-box:hover{transform:translateY(-2px);border-color:rgba(0,200,255,.15)}
+.stat-box::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0}
+.sb-cyan::after{background:linear-gradient(90deg,var(--c0),transparent)}
+.sb-green::after{background:linear-gradient(90deg,var(--c1),transparent)}
+.sb-amber::after{background:linear-gradient(90deg,var(--c3),transparent)}
+.sb-purple::after{background:linear-gradient(90deg,var(--c4),transparent)}
+
+/* Table */
+.adm-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.adm-table th{text-align:left;padding:10px 12px;font-size:10px;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--txt3);border-bottom:1px solid var(--border);
+  font-weight:700;white-space:nowrap}
+.adm-table td{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+.adm-table tr:last-child td{border-bottom:none}
+.adm-table tbody tr{transition:background .15s}
+.adm-table tbody tr:hover td{background:rgba(0,200,255,.025)}
+
+/* Tab system */
+.tabs{display:flex;gap:2px;margin-bottom:20px;background:rgba(255,255,255,.03);
+  padding:4px;border-radius:10px;border:1px solid var(--border)}
+.tab-btn{flex:1;padding:9px 12px;border:none;background:none;border-radius:7px;
+  font-size:12px;font-weight:600;color:var(--txt3);cursor:pointer;
+  transition:all .2s;font-family:'Space Grotesk',sans-serif}
+.tab-btn:hover{color:var(--txt);background:rgba(255,255,255,.04)}
+.tab-btn.active{background:var(--surface);color:var(--c0);border:1px solid rgba(0,200,255,.18)}
+.tab-pane{display:none}
+.tab-pane.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* custom toggle */
+.custom-toggle{display:none;margin-top:12px;padding:14px;background:rgba(255,107,53,.05);
+  border:1px solid rgba(255,107,53,.18);border-radius:8px;animation:fadeIn .25s ease}
+
+/* Live pulse */
+.live-dot{display:inline-block;width:7px;height:7px;background:var(--c1);
+  border-radius:50%;animation:blink 1.5s infinite;margin-right:5px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+</style>
+</head>
+<body>
+<div class="shell">
+  {% include '_sidebar.html' %}
+
+  <main class="main">
+    <div class="topbar">
+      <div class="page-hd">
+        <h1>⚙ Admin Control Center</h1>
+        <p>{{ users|length }} users · {{ projs|length }} projects · <span class="live-dot"></span>Live monitoring</p>
+      </div>
+      <div class="flex fai gap2">
+        <span class="admin-badge b-admin">⚡ Admin Mode</span>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-ghost btn-sm">← Dashboard</a>
+      </div>
+    </div>
+
+    <div class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat,msg in messages %}
+          <div class="alert alert-{{ 'error' if cat=='error' else 'success' }}">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <!-- ═══ ADMIN CREDENTIALS ═══════════════════════ -->
+      <div class="creds-box mb5">
+        <div class="flex fai fjb mb3">
+          <div>
+            <div class="fw7" style="font-size:14px">🔑 Admin Credentials</div>
+            <div style="font-size:11px;color:var(--txt3);margin-top:2px">Use these to login at /login · Change ADMIN_PASSWORD in app.py after setup</div>
+          </div>
+          <span class="admin-badge b-admin">🔒 Secure</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="cred-field">
+            <span class="cred-label">Login URL</span>
+            <span class="cred-value" style="color:var(--c1)">http://YOUR-IP:5000/login</span>
+          </div>
+          <div class="cred-field">
+            <span class="cred-label">Admin URL</span>
+            <span class="cred-value" style="color:var(--c1)">http://YOUR-IP:5000/admin</span>
+          </div>
+          <div class="cred-field">
+            <span class="cred-label">Username</span>
+            <span class="cred-value" id="cv-user">{{ admin_user }}</span>
+            <button class="cred-copy-btn" onclick="copyText('{{ admin_user }}',this)">📋 Copy</button>
+          </div>
+          <div class="cred-field">
+            <span class="cred-label">Password</span>
+            <span class="cred-value" id="cv-pass">{{ admin_pass }}</span>
+            <button class="cred-copy-btn" onclick="copyText('{{ admin_pass }}',this)">📋 Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SERVER STATS ════════════════════════════ -->
+      <div class="sec-title mb3" id="admin-stats">
+        📊 Live Server Stats <span style="font-size:11px;color:var(--txt3);font-weight:400">· refreshes every 3s</span>
+      </div>
+      <div class="stat-grid mb5">
+        <div class="stat-box sb-cyan">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--txt3);margin-bottom:6px">CPU</div>
+          <div style="font-size:26px;font-weight:900;font-family:'Orbitron',monospace;color:var(--c0)" id="s-cpu">{{ cpu }}%</div>
+          <div class="pbar" style="margin-top:8px"><div class="pfill" id="b-cpu" style="width:{{ cpu }}%;background:var(--c0);transition:width .8s"></div></div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:5px">Processor load</div>
+        </div>
+        <div class="stat-box sb-green">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--txt3);margin-bottom:6px">RAM</div>
+          <div style="font-size:26px;font-weight:900;font-family:'Orbitron',monospace;color:var(--c1)" id="s-ram">{{ ram_pct }}%</div>
+          <div class="pbar" style="margin-top:8px"><div class="pfill" id="b-ram" style="width:{{ ram_pct }}%;background:var(--c1);transition:width .8s"></div></div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:5px" id="s-ram-d">{{ ram_used }}GB / {{ ram_total }}GB</div>
+        </div>
+        <div class="stat-box sb-amber">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--txt3);margin-bottom:6px">Disk</div>
+          <div style="font-size:26px;font-weight:900;font-family:'Orbitron',monospace;color:var(--c3)" id="s-disk">{{ disk_pct }}%</div>
+          <div class="pbar" style="margin-top:8px"><div class="pfill" id="b-disk" style="width:{{ disk_pct }}%;background:var(--c3);transition:width .8s"></div></div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:5px" id="s-disk-d">{{ disk_used }}GB / {{ disk_total }}GB</div>
+        </div>
+        <div class="stat-box sb-purple">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--txt3);margin-bottom:6px">Network</div>
+          <div style="font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--c4);margin-top:4px">
+            <div>↑ {{ net_sent }}MB sent</div>
+            <div style="margin-top:4px">↓ {{ net_recv }}MB recv</div>
+          </div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:10px">Total traffic</div>
+        </div>
+      </div>
+
+      <!-- ═══ TABS ══════════════════════════════════ -->
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('tab-grant',this)">🎁 Grant Plan</button>
+        <button class="tab-btn" onclick="showTab('tab-users',this)">👥 Users</button>
+        <button class="tab-btn" onclick="showTab('tab-projects',this)">🚀 Projects</button>
+        <button class="tab-btn" onclick="showTab('tab-sysinfo',this)">💻 System</button>
+      </div>
+
+      <!-- ═ TAB: GRANT PLAN ═══════════════════════════ -->
+      <div id="tab-grant" class="tab-pane active">
+        <div class="grant-card">
+          <div class="flex fai fjb mb4">
+            <div>
+              <div class="fw7" style="font-size:15px">🎁 Grant Premium Plan to User</div>
+              <div style="font-size:12px;color:var(--txt3);margin-top:3px">Assign any plan with custom storage and duration — by email or username</div>
+            </div>
+          </div>
+
+          <form method="POST" action="{{ url_for('admin_grant_plan') }}" id="grantForm">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div class="form-row" style="margin:0">
+                <label class="form-label">📧 Email or Username</label>
+                <input name="email" class="form-input" placeholder="user@gmail.com or username" required autocomplete="off">
+              </div>
+              <div class="form-row" style="margin:0">
+                <label class="form-label">⭐ Plan</label>
+                <select name="plan" class="form-input" id="planSelect" onchange="onPlanChange(this.value)">
+                  <option value="starter">🌱 Starter — 100MB · 5 projects</option>
+                  <option value="pro">🔥 Pro — 500MB · 20 projects</option>
+                  <option value="premium" selected>⭐ Premium — 2GB · 100 projects</option>
+                  <option value="custom">🔧 Custom — Set your own MB</option>
+                </select>
+              </div>
+              <div class="form-row" style="margin:0">
+                <label class="form-label">📅 Duration</label>
+                <select name="duration" class="form-input" id="durSelect" onchange="onDurChange(this.value)">
+                  <option value="month">1 Month (30 days)</option>
+                  <option value="3months">3 Months (90 days)</option>
+                  <option value="6months">6 Months (180 days)</option>
+                  <option value="year" selected>1 Year (365 days)</option>
+                  <option value="lifetime">♾ Lifetime (100 years)</option>
+                  <option value="custom_days">📝 Custom days</option>
+                </select>
+              </div>
+              <div class="form-row" style="margin:0" id="customDaysWrap" style="display:none">
+                <label class="form-label">🔢 Custom Days</label>
+                <input name="custom_days" id="customDaysInput" class="form-input" type="number" placeholder="e.g. 45" min="1" max="36500">
+              </div>
+            </div>
+
+            <!-- Custom MB panel -->
+            <div class="custom-toggle" id="customMbWrap">
+              <div class="form-label" style="margin-bottom:8px">🗄 Custom Storage (MB)</div>
+              <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+                <input name="custom_mb" id="customMbInput" class="form-input" type="number"
+                  placeholder="e.g. 250 (leave blank to use plan default)" min="1" max="999999">
+                <div style="font-size:12px;color:var(--txt3);padding-bottom:12px">MB</div>
+              </div>
+              <div style="margin-top:8px;font-size:11px;color:var(--txt3)">
+                💡 Quick: 
+                <span class="quick-mb" onclick="setMb(100)">100MB</span> ·
+                <span class="quick-mb" onclick="setMb(250)">250MB</span> ·
+                <span class="quick-mb" onclick="setMb(500)">500MB</span> ·
+                <span class="quick-mb" onclick="setMb(1024)">1GB</span> ·
+                <span class="quick-mb" onclick="setMb(2048)">2GB</span> ·
+                <span class="quick-mb" onclick="setMb(5120)">5GB</span> ·
+                <span class="quick-mb" onclick="setMb(10240)">10GB</span>
+              </div>
+            </div>
+
+            <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
+              <button type="submit" class="btn btn-primary" style="padding:12px 28px;font-size:14px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Grant Access
+              </button>
+              <div style="font-size:12px;color:var(--txt3)">
+                User will instantly get upgraded plan with set storage quota
+              </div>
+            </div>
+
+            <!-- Plan limits reference -->
+            <div style="margin-top:16px;padding:12px 14px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid var(--border)">
+              <div style="font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--txt3);margin-bottom:8px">Plan Reference</div>
+              <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px">
+                {% for name, lim in plan_limits.items() if name != 'admin' %}
+                <div><span style="color:var(--txt2)">{{ lim.label }}:</span> <span style="color:var(--c0);font-family:'JetBrains Mono',monospace">{{ lim.storage_mb }}MB / {{ lim.max_projects }} proj</span></div>
+                {% endfor %}
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ═ TAB: USERS ════════════════════════════════ -->
+      <div id="tab-users" class="tab-pane">
+        <div class="card">
+          <div class="card-head flex fai fjb">
+            <div><div class="card-title">👥 All Users <span style="color:var(--txt3);font-weight:400;font-size:12px">({{ users|length }})</span></div></div>
+            <input id="userSearch" class="form-input" style="width:200px;padding:7px 12px;font-size:12px" placeholder="🔍 Search users…" oninput="filterTable('userTable',this.value)">
+          </div>
+          <div style="overflow-x:auto">
+            <table class="adm-table" id="userTable">
+              <thead><tr>
+                <th>User</th><th>Email</th><th>Plan</th><th>Storage</th><th>Expiry</th><th>Projects</th><th>Joined</th><th>Actions</th>
+              </tr></thead>
+              <tbody>
+              {% for uid, u in users.items() %}
+              <tr>
+                <td>
+                  <div class="flex fai gap2">
+                    <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,rgba(0,200,255,.15),rgba(168,85,247,.1));border:1px solid rgba(0,200,255,.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--c0);flex-shrink:0">{{ u.username[0].upper() }}</div>
+                    <div>
+                      <div style="font-weight:600">{{ u.username }}</div>
+                      {% if u.get('is_admin') %}<span class="admin-badge b-admin" style="font-size:9px;padding:2px 6px">⚡ admin</span>{% endif %}
+                    </div>
+                  </div>
+                </td>
+                <td style="color:var(--txt2);font-size:12px">{{ u.email }}</td>
+                <td>
+                  {% set pl = u.plan|default('free') %}
+                  <span class="admin-badge b-{{ pl if pl in ['admin','premium','pro','starter'] else 'free' }}">{{ pl }}</span>
+                  {% if u.get('custom_storage_mb') %}<span class="admin-badge b-custom" style="margin-left:4px;font-size:9px">{{ u.custom_storage_mb }}MB</span>{% endif %}
+                </td>
+                <td style="font-size:11px;color:var(--txt2)">
+                  {{ u.get('custom_storage_mb', plan_limits.get(u.plan|default('free'),{}).get('storage_mb','?')) }}MB
+                </td>
+                <td style="font-size:11px;color:var(--txt3)">{{ u.plan_expiry[:10] if u.plan_expiry else '—' }}</td>
+                <td style="color:var(--txt2)">{{ projs.values()|selectattr('owner','eq',uid)|list|length }}</td>
+                <td style="font-size:11px;color:var(--txt3)">{{ u.created_at[:10] if u.created_at else '—' }}</td>
+                <td>
+                  <div class="flex fai gap1">
+                    {% if uid != session.uid %}
+                    <form method="POST" action="{{ url_for('admin_toggle_admin',uid=uid) }}" style="display:inline">
+                      <button class="btn btn-amber btn-xs">{{ '⬇ Demote' if u.get('is_admin') else '⬆ Promote' }}</button>
+                    </form>
+                    {% endif %}
+                    {% if u.plan|default('free') not in ['free','admin'] %}
+                    <form method="POST" action="{{ url_for('admin_revoke_plan',uid=uid) }}" style="display:inline">
+                      <button class="btn btn-ghost btn-xs">Revoke</button>
+                    </form>
+                    {% endif %}
+                    {% if uid != session.uid %}
+                    <form method="POST" action="{{ url_for('admin_del_user',uid=uid) }}" style="display:inline">
+                      <button class="btn btn-red btn-xs" onclick="return confirmDelete('Delete user {{ u.username }}? All their projects will also be deleted.')">🗑</button>
+                    </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% if not users %}
+              <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--txt3)">No users yet</td></tr>
+              {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═ TAB: PROJECTS ══════════════════════════════ -->
+      <div id="tab-projects" class="tab-pane">
+        <div class="card">
+          <div class="card-head flex fai fjb">
+            <div><div class="card-title">🚀 All Projects <span style="color:var(--txt3);font-weight:400;font-size:12px">({{ projs|length }})</span></div></div>
+            <div class="flex fai gap2">
+              <input id="projSearch" class="form-input" style="width:200px;padding:7px 12px;font-size:12px" placeholder="🔍 Search…" oninput="filterTable('projTable',this.value)">
+              <form method="POST" action="{{ url_for('admin_fix_paths') }}" style="display:inline">
+                <button class="btn btn-ghost btn-sm">🔧 Fix Paths</button>
+              </form>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="adm-table" id="projTable">
+              <thead><tr>
+                <th>Project</th><th>Owner</th><th>Lang</th><th>Port</th><th>Status</th><th>RAM</th><th>Uptime</th><th>Actions</th>
+              </tr></thead>
+              <tbody>
+              {% for pid, p in projs.items() %}
+              <tr>
+                <td>
+                  <div style="font-weight:600;font-size:13px">{{ p.name }}</div>
+                  <div style="font-size:10px;color:var(--txt3);font-family:'JetBrains Mono',monospace">{{ pid }}</div>
+                </td>
+                <td>
+                  <span style="color:var(--txt2);font-size:12px">@{{ p.owner_name|default('?') }}</span>
+                </td>
+                <td>
+                  <span class="tag tag-{{ 'py' if p.language=='python' else 'node' if p.language=='nodejs' else 'unk' }}">
+                    {{ '🐍 Py' if p.language=='python' else '💚 Node' if p.language=='nodejs' else p.language }}
+                  </span>
+                </td>
+                <td class="mono txt-c0" style="font-weight:700">:{{ p.port }}</td>
+                <td>
+                  <span class="tag tag-{{ 'run' if p.status=='running' else 'err' if p.status=='error' else 'stop' }}">
+                    <span class="pulse {{ p.status }}"></span>{{ p.status.capitalize() }}
+                  </span>
+                </td>
+                <td style="font-size:12px;color:var(--txt2)">{{ p.memory }}MB</td>
+                <td style="font-size:11px;color:var(--txt3)">{{ p.uptime }}</td>
+                <td>
+                  <div class="flex fai gap1">
+                    <a href="{{ url_for('project_view',pid=pid) }}" class="btn btn-outline btn-xs">View</a>
+                    <a href="{{ url_for('terminal',pid=pid) }}" class="btn btn-ghost btn-xs">📟</a>
+                    <form method="POST" action="{{ url_for('admin_del_project',pid=pid) }}" style="display:inline">
+                      <button class="btn btn-red btn-xs" onclick="return confirmDelete('Delete project {{ p.name }}?')">🗑</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% if not projs %}
+              <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--txt3)">No projects deployed yet</td></tr>
+              {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═ TAB: SYSTEM ════════════════════════════════ -->
+      <div id="tab-sysinfo" class="tab-pane">
+        <div class="grid2" style="gap:16px">
+          <div class="card">
+            <div class="card-head"><div class="card-title">💻 System Info</div></div>
+            <div class="info-row"><span class="info-key">OS</span><span class="info-val mono" style="font-size:11px">{{ os_platform }}</span></div>
+            <div class="info-row"><span class="info-key">Python</span><span class="info-val mono txt-c0" style="font-size:11px">{{ python_bin }}</span></div>
+            <div class="info-row"><span class="info-key">Node.js</span><span class="info-val mono txt-c1" style="font-size:11px">{{ node_bin }}</span></div>
+            <div class="info-row"><span class="info-key">Panel</span><span class="info-val" style="color:var(--c4)">v4.1 Secure</span></div>
+            <div class="info-row"><span class="info-key">Total Users</span><span class="info-val">{{ users|length }}</span></div>
+            <div class="info-row"><span class="info-key">Total Projects</span><span class="info-val">{{ projs|length }}</span></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">📦 Plan Limits</div></div>
+            {% for name, lim in plan_limits.items() %}
+            <div class="info-row">
+              <span class="info-key">{{ lim.label }}</span>
+              <span class="info-val mono" style="font-size:11px;color:var(--c0)">{{ lim.storage_mb }}MB · {{ lim.max_projects }} proj</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div>
+
+<style>
+.quick-mb{color:var(--c0);cursor:pointer;text-decoration:underline;font-family:'JetBrains Mono',monospace}
+.quick-mb:hover{color:var(--c1)}
+</style>
+
+<script src="{{ url_for('static',filename='script.js') }}"></script>
+<script>
+// ── TABS ────────────────────────────────────────
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  localStorage.setItem('admin_tab', id);
+}
+// Restore active tab
+const savedTab = localStorage.getItem('admin_tab');
+if (savedTab && document.getElementById(savedTab)) {
+  const btn = document.querySelector(`[onclick*="${savedTab}"]`);
+  if (btn) showTab(savedTab, btn);
+}
+
+// ── GRANT FORM ──────────────────────────────────
+function onPlanChange(val) {
+  const wrap = document.getElementById('customMbWrap');
+  wrap.style.display = val === 'custom' ? 'block' : 'none';
+}
+function onDurChange(val) {
+  const wrap = document.getElementById('customDaysWrap');
+  const inp  = document.getElementById('customDaysInput');
+  if (val === 'custom_days') {
+    wrap.style.display = 'block';
+    wrap.style.animation = 'fadeIn .25s ease';
+    inp.required = true;
+  } else {
+    wrap.style.display = 'none';
+    inp.required = false;
+  }
+}
+function setMb(val) {
+  document.getElementById('customMbInput').value = val;
+}
+
+// ── TABLE SEARCH ────────────────────────────────
+function filterTable(tableId, query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll(`#${tableId} tbody tr`).forEach(tr => {
+    tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ── ADMIN LIVE STATS ────────────────────────────
+(function liveStats() {
+  async function refresh() {
+    try {
+      const d = await (await fetch('/api/server/stats')).json();
+      const s = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+      const w = (id, v) => { const e = document.getElementById(id); if(e) e.style.width = v; };
+      s('s-cpu',  d.cpu + '%');
+      s('s-ram',  d.ram_pct + '%');
+      s('s-disk', d.disk_pct + '%');
+      s('s-ram-d', d.ram_used + 'GB / ' + d.ram_total + 'GB');
+      s('s-disk-d', d.disk_used + 'GB / ' + d.disk_total + 'GB');
+      w('b-cpu',  d.cpu + '%');
+      w('b-ram',  d.ram_pct + '%');
+      w('b-disk', d.disk_pct + '%');
+    } catch(e) {}
+    setTimeout(refresh, 3000);
+  }
+  refresh();
+})();
+</script>
+</body>
+</html>

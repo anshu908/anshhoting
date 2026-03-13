@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard — ANSHHOSTING</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+</head>
+<body>
+<div class="shell">
+  {% include '_sidebar.html' %}
+  <main class="main">
+    <div class="topbar">
+      <div class="page-hd">
+        <h1>⚡ Mission Control</h1>
+        <p>{{ all_projs|length }} project{{ 's' if all_projs|length!=1 }} · {{ running|length }} running</p>
+      </div>
+      <div class="flex fai gap2">
+        <a href="{{ url_for('deploy') }}" class="btn btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Deploy New
+        </a>
+      </div>
+    </div>
+
+    <div class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat,msg in messages %}
+          <div class="alert alert-{{ 'error' if cat=='error' else 'success' }}">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      {% if pi.plan not in ['free','admin'] and pi.expiry %}
+      <div class="alert alert-info">⭐ <b>{{ pi.label }} Plan</b> active · Expires {{ pi.expiry[:10] }}</div>
+      {% endif %}
+
+      <!-- Stats Grid -->
+      <div class="stats-row anim-stagger">
+        <div class="stat-card c-cyan">
+          <div class="stat-icon">🚀</div>
+          <div class="stat-label">Projects</div>
+          <div class="stat-val txt-c0">{{ all_projs|length }}<span style="font-size:12px;color:var(--txt3)"> / {{ pi.max_projects }}</span></div>
+          <div class="stat-sub">Total deployed</div>
+        </div>
+        <div class="stat-card c-green">
+          <div class="stat-icon" style="animation:blink 1.5s infinite">●</div>
+          <div class="stat-label">Running</div>
+          <div class="stat-val txt-c1">{{ running|length }}</div>
+          <div class="stat-sub">Live now</div>
+        </div>
+        <div class="stat-card c-amber">
+          <div class="stat-icon">⏸</div>
+          <div class="stat-label">Offline</div>
+          <div class="stat-val txt-c3">{{ stopped|length }}</div>
+          <div class="stat-sub">Stopped</div>
+        </div>
+        <div class="stat-card c-purple">
+          <div class="stat-icon">💾</div>
+          <div class="stat-label">Storage Used</div>
+          <div class="stat-val" style="color:var(--c4);font-size:15px;letter-spacing:0;margin-top:6px">
+            {{ pi.disk_used }}MB <span style="font-size:10px;color:var(--txt3)">/ {{ pi.storage_mb }}MB</span>
+          </div>
+          <div class="pbar" style="margin-top:8px">
+            <div class="pfill" style="width:{{ [(pi.disk_used/pi.storage_mb*100)|round|int,100]|min }}%;background:{% if pi.disk_used/pi.storage_mb > 0.85 %}var(--c2){% else %}var(--c4){% endif %}"></div>
+          </div>
+          <div class="stat-sub" style="margin-top:4px">
+            {% if pi.plan=='free' %}<a href="https://t.me/crystaapi" target="_blank" style="color:var(--c0);text-decoration:none">Upgrade ↗</a>{% else %}{{ pi.label }}{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Running Projects -->
+      {% if running %}
+      <div class="sec-head mb3">
+        <div class="sec-title">🟢 Live Deployments</div>
+        <span class="tag tag-run">{{ running|length }}</span>
+      </div>
+      <div class="proj-grid mb5">
+        {% for pid, p in running.items() %}
+        <div class="proj-card anim-card-in" style="animation-delay:{{ loop.index * 60 }}ms">
+          <div class="proj-card-glow"></div>
+          <div class="proj-top">
+            <div>
+              <div class="proj-name">{{ p.name }}</div>
+              <div class="flex fai gap1" style="margin-top:5px">
+                <span class="tag tag-{{ 'py' if p.language=='python' else 'node' if p.language=='nodejs' else 'unk' }}">
+                  {{ '🐍 Python' if p.language=='python' else '💚 Node' if p.language=='nodejs' else p.language }}
+                </span>
+                <span class="tag tag-run"><span class="pulse running"></span>Live</span>
+                {% if p.dep_status=='installing' %}
+                  <span class="tag" style="border-color:rgba(255,184,0,.3);color:var(--c3);font-size:10px">⚡ Installing</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="proj-port">:{{ p.port }}</div>
+          </div>
+          <div class="proj-stats">
+            <div class="proj-stat"><div class="proj-stat-val">{{ p.memory }}MB</div><div class="proj-stat-key">RAM</div></div>
+            <div class="proj-stat"><div class="proj-stat-val">{{ p.uptime }}</div><div class="proj-stat-key">Uptime</div></div>
+            <div class="proj-stat"><div class="proj-stat-val txt-c0" style="font-size:10px">{{ p.entry_file or '—' }}</div><div class="proj-stat-key">Entry</div></div>
+          </div>
+          <div class="proj-actions">
+            <button class="btn btn-amber btn-xs" onclick="projAction('{{ pid }}','restart')">↺ Restart</button>
+            <button class="btn btn-ghost btn-xs" onclick="projAction('{{ pid }}','stop')">⏸ Stop</button>
+            <a href="{{ url_for('terminal',pid=pid) }}" class="btn btn-ghost btn-xs">📟 Logs</a>
+            <a href="{{ url_for('project_view',pid=pid) }}" class="btn btn-outline btn-xs">Manage →</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Stopped Projects -->
+      {% if stopped %}
+      <div class="sec-head mb3"><div class="sec-title">⏸ Offline</div><span class="tag tag-stop">{{ stopped|length }}</span></div>
+      <div class="proj-grid">
+        {% for pid, p in stopped.items() %}
+        <div class="proj-card proj-card-stopped anim-card-in" style="animation-delay:{{ loop.index * 60 }}ms">
+          <div class="proj-top">
+            <div>
+              <div class="proj-name">{{ p.name }}</div>
+              <div class="flex fai gap1" style="margin-top:5px">
+                <span class="tag tag-{{ 'py' if p.language=='python' else 'node' if p.language=='nodejs' else 'unk' }}">
+                  {{ '🐍' if p.language=='python' else '💚' if p.language=='nodejs' else '?' }}
+                </span>
+                <span class="tag tag-{{ 'err' if p.status=='error' else 'stop' }}">{{ p.status.capitalize() }}</span>
+              </div>
+            </div>
+            <div class="proj-port" style="color:var(--txt3)">:{{ p.port }}</div>
+          </div>
+          <div class="proj-actions">
+            <button class="btn btn-green btn-xs" onclick="projAction('{{ pid }}','start')">▶ Start</button>
+            <a href="{{ url_for('terminal',pid=pid) }}" class="btn btn-ghost btn-xs">📟 Logs</a>
+            <a href="{{ url_for('project_view',pid=pid) }}" class="btn btn-outline btn-xs">Manage →</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if not all_projs %}
+      <div class="empty">
+        <div class="empty-ico">🚀</div>
+        <h3>No deployments yet</h3>
+        <p style="margin-bottom:20px;color:var(--txt3)">Upload your Python or Node.js project to get started.</p>
+        <a href="{{ url_for('deploy') }}" class="btn btn-primary">⬆ Deploy First Project</a>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+</div>
+<script src="{{ url_for('static',filename='script.js') }}"></script>
+</body>
+</html>

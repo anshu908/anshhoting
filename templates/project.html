@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ p.name }} — ANSHHOSTING</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+</head>
+<body>
+<div class="shell">
+{% include '_sidebar.html' %}
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb"><a href="{{ url_for('dashboard') }}">Dashboard</a><span>/</span><span style="color:var(--txt)">{{ p.name }}</span></div>
+      <div class="page-hd" style="margin-top:4px"><h1>{{ p.name }}</h1><p>Project control panel</p></div>
+    </div>
+    <div class="flex fai gap2">
+      {% if p.get('source')=='github' %}
+      <button class="btn btn-outline btn-sm" onclick="gitPull('{{ p.id }}')">⎇ Git Pull</button>
+      {% endif %}
+      <a href="{{ url_for('terminal',pid=p.id) }}" class="btn btn-outline">📟 Terminal</a>
+      <a href="{{ url_for('dashboard') }}" class="btn btn-ghost btn-sm">← Back</a>
+    </div>
+  </div>
+
+  <div class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat,msg in messages %}<div class="alert alert-{{ 'error' if cat=='error' else 'success' }}">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+
+    <!-- Status cards -->
+    <div class="stats-row mb4">
+      <div class="stat-card c-green">
+        <div class="stat-label">Status</div>
+        <div style="margin:10px 0 4px"><span id="status-badge" class="tag tag-{{ p.status }}"><span class="pulse {{ p.status }}"></span> {{ p.status.capitalize() }}</span></div>
+        <div class="stat-sub">Auto-monitoring</div>
+      </div>
+      <div class="stat-card c-cyan">
+        <div class="stat-label">Port</div>
+        <div class="stat-val txt-c0">{{ p.port }}</div>
+        <div class="stat-sub"><a href="http://localhost:{{ p.port }}" target="_blank" style="color:var(--c0)">Open ↗</a></div>
+      </div>
+      <div class="stat-card c-amber">
+        <div class="stat-label">Memory</div>
+        <div class="stat-val" style="color:var(--c3)" id="mem-val">{{ p.memory }}<span style="font-size:14px"> MB</span></div>
+        <div class="stat-sub">RAM usage</div>
+      </div>
+      <div class="stat-card c-purple">
+        <div class="stat-label">Uptime</div>
+        <div class="stat-val" style="color:var(--c4);font-size:18px;letter-spacing:0" id="uptime-val">{{ p.uptime }}</div>
+        <div class="stat-sub">Since last start</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;align-items:start">
+
+      <!-- Controls -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card">
+          <div class="card-head"><div class="card-title">⚙ Process Control</div></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn btn-green w100" onclick="projAction('{{ p.id }}','start')">▶ Start</button>
+            <button class="btn btn-amber w100" onclick="projAction('{{ p.id }}','restart')">↺ Restart</button>
+            <button class="btn btn-ghost w100" onclick="projAction('{{ p.id }}','stop')">⏸ Stop</button>
+            <a href="{{ url_for('terminal',pid=p.id) }}" class="btn btn-outline w100">📟 Live Logs</a>
+            <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:2px">
+              <button class="btn btn-red w100" onclick="delProject('{{ p.id }}','{{ p.name }}')">🗑 Delete Project</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Entry file change -->
+        <div class="card">
+          <div class="card-head"><div class="card-title">📄 Entry File</div></div>
+          <div style="font-size:12px;color:var(--txt3);margin-bottom:10px">Current: <span class="mono" style="color:var(--c0)">{{ p.entry_file or 'None' }}</span></div>
+          {% if available_entries %}
+          <select id="entry-sel" style="width:100%;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;margin-bottom:8px">
+            {% for ef in available_entries %}
+            <option value="{{ ef }}" {% if ef==p.entry_file %}selected{% endif %}>{{ ef }}</option>
+            {% endfor %}
+          </select>
+          {% else %}
+          <input type="text" id="entry-sel" class="form-input mono" style="font-size:12px;margin-bottom:8px" placeholder="e.g. main.py" value="{{ p.entry_file or '' }}">
+          {% endif %}
+          <button class="btn btn-outline w100 btn-sm" onclick="changeEntry('{{ p.id }}')">Set Entry File</button>
+        </div>
+      </div>
+
+      <!-- Manual dep install -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card">
+          <div class="card-head"><div class="card-title">📦 Dependency Manager</div></div>
+          <!-- Manual install -->
+          <div style="margin-bottom:14px">
+            <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">Install Packages</div>
+            <textarea id="pkg-input" class="form-input mono" style="font-size:12px;height:70px;resize:vertical" placeholder="flask requests numpy&#10;(space or newline separated)"></textarea>
+            <button class="btn btn-primary w100 btn-sm" style="margin-top:6px" onclick="manualInstall('{{ p.id }}')">⚡ Install Packages</button>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:12px">
+            <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">Reinstall All Deps</div>
+            <div style="font-size:12px;color:var(--txt3);margin-bottom:8px">Re-runs pip/npm install from requirements.txt / package.json</div>
+            <button class="btn btn-amber w100 btn-sm" onclick="reinstallAll('{{ p.id }}')">🔄 Reinstall All</button>
+          </div>
+        </div>
+
+        <!-- Git info -->
+        {% if p.get('source')=='github' %}
+        <div class="card" style="border-color:rgba(0,200,255,0.15)">
+          <div class="card-head"><div class="card-title">⎇ GitHub</div></div>
+          <div class="info-row"><span class="info-key">Repo</span><a href="{{ p.repo_url|replace('.git','') }}" target="_blank" style="color:var(--c0);font-size:12px;font-family:'JetBrains Mono',monospace;word-break:break-all">{{ (p.repo_url or '—')|replace('https://github.com/','') }}</a></div>
+          <div class="info-row"><span class="info-key">Branch</span><span class="info-val">{{ p.get('branch','main') }}</span></div>
+          <button class="btn btn-outline w100 btn-sm" style="margin-top:12px" onclick="gitPull('{{ p.id }}')">⎇ Pull Latest Changes</button>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Project info -->
+      <div class="card">
+        <div class="card-head"><div class="card-title">ℹ Details</div></div>
+        <div class="info-row"><span class="info-key">ID</span><span class="info-val" style="font-size:11px">{{ p.id }}</span></div>
+        <div class="info-row"><span class="info-key">Language</span>
+          <span class="tag tag-{{ 'py' if p.language=='python' else 'node' if p.language=='nodejs' else 'unk' }}">
+            {{ '🐍 Python' if p.language=='python' else '💚 Node.js' if p.language=='nodejs' else '? Unknown' }}
+          </span>
+        </div>
+        <div class="info-row"><span class="info-key">Entry</span><span class="info-val">{{ p.entry_file or '—' }}</span></div>
+        <div class="info-row"><span class="info-key">Port</span><span class="info-val txt-c0">{{ p.port }}</span></div>
+        <div class="info-row"><span class="info-key">Source</span>
+          <span class="tag tag-{{ 'run' if p.get('source')=='github' else 'stop' }}">
+            {{ '⎇ GitHub' if p.get('source')=='github' else '📦 Upload' }}
+          </span>
+        </div>
+        <div class="info-row"><span class="info-key">Plan</span>
+          <span style="font-size:12px;color:var(--c3);font-weight:700">{{ pi.label }}</span>
+        </div>
+        <div class="info-row"><span class="info-key">Deployed</span><span class="info-val">{{ p.created_at[:16].replace('T',' ') }}</span></div>
+        {% if p.description %}
+        <div class="info-row"><span class="info-key">Desc</span><span class="info-val">{{ p.description }}</span></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- File Manager -->
+    <div class="card mt4">
+      <div class="card-head">
+        <div><div class="card-title">📁 File Manager</div><div class="card-sub">{{ files|length }} file(s)</div></div>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">↑ Upload<input type="file" id="proj-file-inp" style="display:none"></label>
+      </div>
+      {% if files %}
+      <div class="file-list">
+        {% for file in files %}
+        <div class="file-row">
+          <div class="flex fai gap2">
+            <span class="file-ico">{{ '🐍' if file.ext=='py' else '💛' if file.ext=='js' else '📋' if file.ext=='json' else '📄' if file.ext in ['txt','md'] else '🌐' if file.ext=='html' else '🎨' if file.ext=='css' else '📁' }}</span>
+            <div><div class="file-name">{{ file.name }}</div><div class="file-sz">{{ file.size }} KB</div></div>
+          </div>
+          <button class="btn btn-red btn-xs" onclick="delFile('{{ p.id }}','{{ file.name }}')">Delete</button>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><div class="empty-ico">📂</div><p>No files found.</p></div>
+      {% endif %}
+    </div>
+  </div>
+</main>
+</div>
+<script src="{{ url_for('static',filename='script.js') }}"></script>
+<script>
+pollStatus('{{ p.id }}');
+initProjUpload('{{ p.id }}');
+
+async function manualInstall(pid) {
+  const pkgs = document.getElementById('pkg-input').value.trim();
+  if (!pkgs) { toast('Enter package names first.','err'); return; }
+  try {
+    const d = await (await fetch(`/api/project/${pid}/install`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({packages:pkgs})
+    })).json();
+    toast('Installing packages in background — check terminal logs.','info');
+  } catch(e) { toast('Install failed: '+e.message,'err'); }
+}
+
+async function reinstallAll(pid) {
+  if (!confirm('Reinstall all dependencies from requirements.txt / package.json?')) return;
+  try {
+    await fetch(`/api/project/${pid}/reinstall`,{method:'POST'});
+    toast('Reinstalling all dependencies — check terminal logs.','info');
+  } catch(e) { toast('Error: '+e.message,'err'); }
+}
+
+async function changeEntry(pid) {
+  const sel = document.getElementById('entry-sel');
+  const val = sel.value || sel.value;
+  if (!val) { toast('Select or enter an entry file.','err'); return; }
+  try {
+    const d = await (await fetch(`/api/project/${pid}/set_entry`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({entry_file:val})
+    })).json();
+    if (d.status==='ok') { toast(`Entry file set to: ${d.entry_file}`,'ok'); }
+    else toast(d.error||'Error','err');
+  } catch(e) { toast('Error: '+e.message,'err'); }
+}
+
+async function gitPull(pid) {
+  if (!confirm('Pull latest changes from GitHub? Project will restart if running.')) return;
+  try {
+    const d = await (await fetch(`/api/project/${pid}/git_pull`,{method:'POST'})).json();
+    toast(d.status==='pulled' ? '✅ Git pull successful!' : '❌ Git pull failed — check terminal.', d.status==='pulled'?'ok':'err');
+  } catch(e) { toast('Error: '+e.message,'err'); }
+}
+</script>
+</body></html>

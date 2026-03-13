@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login — ANSHHOSTING</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#030508;font-family:'Space Grotesk',sans-serif;color:#e8eaf0}
+
+/* CANVAS */
+#c{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
+
+/* GRID */
+.grid{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:linear-gradient(rgba(0,200,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,200,255,.03) 1px,transparent 1px);
+  background-size:52px 52px;
+  -webkit-mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,#000 20%,transparent 100%);
+  mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,#000 20%,transparent 100%);
+  animation:gp 8s ease-in-out infinite}
+@keyframes gp{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* ORBS */
+.orb{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:1;
+  animation:op 10s ease-in-out infinite}
+@keyframes op{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.o1{width:480px;height:480px;background:rgba(0,200,255,.055);top:-140px;left:-140px}
+.o2{width:360px;height:360px;background:rgba(168,85,247,.045);bottom:-100px;right:-100px;animation-delay:-5s}
+
+/* SCAN LINE */
+.scan{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,200,255,.005) 4px)}
+
+/* WRAPPER */
+.wrap{position:relative;z-index:10;height:100vh;display:flex;
+  align-items:center;justify-content:center;padding:20px}
+
+/* CARD */
+.card{
+  width:420px;max-width:100%;
+  background:linear-gradient(160deg,rgba(8,16,30,.97) 0%,rgba(4,9,18,.98) 100%);
+  border:1px solid rgba(0,200,255,.12);border-radius:22px;
+  padding:42px 38px 36px;
+  box-shadow:0 0 0 1px rgba(0,200,255,.04),0 32px 80px rgba(0,0,0,.75),
+    inset 0 1px 0 rgba(0,200,255,.09),0 0 60px rgba(0,200,255,.03);
+  animation:ci .55s cubic-bezier(.34,1.4,.64,1) both;
+  position:relative;
+}
+@keyframes ci{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:none;scale:1}}
+
+/* cyber corners */
+.card::before{content:'';position:absolute;top:14px;left:14px;
+  width:14px;height:14px;border-top:2px solid rgba(0,200,255,.6);border-left:2px solid rgba(0,200,255,.6);border-radius:3px 0 0 0}
+.card::after{content:'';position:absolute;bottom:14px;right:14px;
+  width:14px;height:14px;border-bottom:2px solid rgba(0,200,255,.6);border-right:2px solid rgba(0,200,255,.6);border-radius:0 0 3px 0}
+
+/* LOGO */
+.logo{text-align:center;margin-bottom:30px}
+.logo-icon{
+  width:62px;height:62px;margin:0 auto 14px;
+  background:linear-gradient(135deg,rgba(0,200,255,.1),rgba(168,85,247,.07));
+  border:1px solid rgba(0,200,255,.22);border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  animation:ig 3s ease-in-out infinite}
+@keyframes ig{0%,100%{box-shadow:0 0 16px rgba(0,200,255,.1)}
+  50%{box-shadow:0 0 36px rgba(0,200,255,.22),inset 0 0 20px rgba(0,200,255,.06)}}
+.logo-icon svg{width:32px;height:32px;display:block;flex-shrink:0}
+.logo-name{
+  font-family:'Orbitron',monospace;font-size:18px;font-weight:900;letter-spacing:3.5px;
+  background:linear-gradient(135deg,#fff 20%,#00c8ff 60%,#a855f7);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  background-size:200%;animation:ns 5s ease-in-out infinite}
+@keyframes ns{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.logo-sub{font-size:11px;color:#3d4f6a;letter-spacing:1.8px;margin-top:5px;text-transform:uppercase}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:10px;margin:0 0 22px;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#3d4f6a}
+.divider::before,.divider::after{content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,200,255,.12),transparent)}
+
+/* FLASH */
+.flash{padding:11px 14px;border-radius:9px;margin-bottom:16px;font-size:13px;
+  font-weight:500;display:flex;align-items:center;gap:9px;
+  animation:fi .3s ease both}
+@keyframes fi{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.flash-err{background:rgba(255,62,108,.07);border:1px solid rgba(255,62,108,.2);color:#ff6b8a}
+.flash-ok {background:rgba(0,255,163,.07);border:1px solid rgba(0,255,163,.2);color:#00ffa3}
+
+/* FIELD */
+.field{margin-bottom:18px}
+.flbl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.9px;color:#7a8fb5;margin-bottom:7px}
+.finp-wrap{position:relative}
+.ficon{position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;color:#3d4f6a;transition:color .2s;pointer-events:none}
+.finp-wrap svg{width:16px;height:16px;display:block}
+.finp{
+  width:100%;padding:13px 14px 13px 42px;
+  background:rgba(0,200,255,.025);border:1px solid rgba(255,255,255,.07);
+  border-radius:11px;color:#e8eaf0;font-size:14px;font-family:'Space Grotesk',sans-serif;
+  outline:none;transition:all .2s}
+.finp:focus{border-color:rgba(0,200,255,.35);background:rgba(0,200,255,.04);
+  box-shadow:0 0 0 3px rgba(0,200,255,.07),0 0 18px rgba(0,200,255,.04)}
+.finp::placeholder{color:#3d4f6a}
+.fline{position:absolute;bottom:-1px;left:10%;right:10%;height:2px;
+  background:linear-gradient(90deg,#00c8ff,#a855f7);border-radius:1px;
+  transform:scaleX(0);transform-origin:center;transition:transform .3s cubic-bezier(.34,1.4,.64,1)}
+.finp:focus~.fline{transform:scaleX(1)}
+
+/* BUTTON */
+.sbtn{
+  width:100%;padding:14px;margin-top:6px;
+  background:linear-gradient(135deg,rgba(0,200,255,.9),rgba(0,175,215,.9));
+  border:none;border-radius:11px;color:#000;font-size:14px;font-weight:700;
+  font-family:'Space Grotesk',sans-serif;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .22s;position:relative;overflow:hidden}
+.sbtn::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
+  transform:translateX(-120%);transition:transform .45s}
+.sbtn:hover::before{transform:translateX(120%)}
+.sbtn:hover{box-shadow:0 0 28px rgba(0,200,255,.28),0 8px 22px rgba(0,0,0,.3);transform:translateY(-1px)}
+.sbtn:active{transform:none;box-shadow:none}
+
+/* DOTS LOADER */
+.dots{display:none;gap:5px;align-items:center}
+.dot{width:5px;height:5px;border-radius:50%;background:#000;
+  animation:db .6s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.12s}
+.dot:nth-child(3){animation-delay:.24s}
+@keyframes db{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* FOOTER */
+.foot{text-align:center;margin-top:22px;padding-top:18px;
+  border-top:1px solid rgba(255,255,255,.05);font-size:13px;color:#7a8fb5}
+.foot a{color:#00c8ff;text-decoration:none;font-weight:600;transition:all .15s}
+.foot a:hover{text-shadow:0 0 10px rgba(0,200,255,.5)}
+
+/* CREDIT */
+.credit{position:fixed;bottom:14px;width:100%;text-align:center;
+  font-size:11px;color:#2a3a52;z-index:10}
+.credit a{color:rgba(0,200,255,.4);text-decoration:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="grid"></div>
+<div class="scan"></div>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="16,2 30,9 30,23 16,30 2,23 2,9" fill="none" stroke="#00c8ff" stroke-width="1.4"/>
+          <polygon points="16,8 24,13 24,19 16,24 8,19 8,13" fill="rgba(0,200,255,0.07)" stroke="rgba(0,200,255,0.35)" stroke-width="1"/>
+          <path d="M11 16 L16 8 L21 16 L16 24 Z" fill="rgba(0,200,255,0.14)" stroke="#00c8ff" stroke-width=".9"/>
+          <circle cx="16" cy="16" r="2.5" fill="#00c8ff"/>
+          <circle cx="16" cy="16" r="5" fill="none" stroke="rgba(0,200,255,0.28)" stroke-width=".8"/>
+        </svg>
+      </div>
+      <div class="logo-name">ANSHHOSTING</div>
+      <div class="logo-sub">Cloud Deployment Platform</div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat,msg in messages %}
+      <div class="flash {{ 'flash-err' if cat=='error' else 'flash-ok' }}">
+        <span>{{ '⚠' if cat=='error' else '✓' }}</span>{{ msg }}
+      </div>
+      {% endfor %}
+    {% endwith %}
+
+    <div class="divider">Secure Access</div>
+
+    <form method="POST" id="lf">
+      <div class="field">
+        <label class="flbl">Username</label>
+        <div class="finp-wrap">
+          <span class="ficon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </span>
+          <input type="text" name="username" class="finp" placeholder="Enter username" required autocomplete="username">
+          <div class="fline"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="flbl">Password</label>
+        <div class="finp-wrap">
+          <span class="ficon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </span>
+          <input type="password" name="password" class="finp" placeholder="Enter password" required autocomplete="current-password">
+          <div class="fline"></div>
+        </div>
+      </div>
+      <button type="submit" class="sbtn" id="sb">
+        <span id="st">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block;vertical-align:middle;margin-right:4px">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Access Platform
+        </span>
+        <div class="dots" id="dl"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      </button>
+    </form>
+
+    <div class="foot">No account? <a href="{{ url_for('register') }}">Create one →</a></div>
+  </div>
+</div>
+<div class="credit">Developed by <a href="https://t.me/crystaapi" target="_blank">AnshAPI</a></div>
+
+<script>
+/* NODE NETWORK CANVAS */
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+let W,H,ns=[];
+function sz(){W=cv.width=innerWidth;H=cv.height=innerHeight}
+sz();addEventListener('resize',sz);
+function mk(){return{x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.45,vy:(Math.random()-.5)*.45,r:Math.random()*1.8+.7,a:Math.random()*.8+.2}}
+for(let i=0;i<65;i++)ns.push(mk());
+(function frame(){
+  cx.clearRect(0,0,W,H);
+  ns.forEach(n=>{
+    n.x+=n.vx;n.y+=n.vy;
+    if(n.x<0||n.x>W)n.vx*=-1;
+    if(n.y<0||n.y>H)n.vy*=-1;
+    cx.beginPath();cx.arc(n.x,n.y,n.r,0,Math.PI*2);
+    cx.fillStyle=`rgba(0,200,255,${n.a*.3})`;cx.fill();
+  });
+  for(let i=0;i<ns.length;i++){
+    for(let j=i+1;j<ns.length;j++){
+      const dx=ns[i].x-ns[j].x,dy=ns[i].y-ns[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<145){
+        cx.beginPath();cx.moveTo(ns[i].x,ns[i].y);cx.lineTo(ns[j].x,ns[j].y);
+        cx.strokeStyle=`rgba(0,200,255,${(1-d/145)*.11})`;cx.lineWidth=.7;cx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(frame);
+})();
+
+/* SUBMIT */
+document.getElementById('lf').addEventListener('submit',()=>{
+  document.getElementById('st').style.display='none';
+  document.getElementById('dl').style.display='flex';
+});
+
+/* ICON FOCUS COLOR */
+document.querySelectorAll('.finp').forEach(inp=>{
+  const ico=inp.closest('.finp-wrap').querySelector('.ficon');
+  inp.addEventListener('focus',()=>ico.style.color='#00c8ff');
+  inp.addEventListener('blur',()=>ico.style.color='#3d4f6a');
+});
+
+/* CARD TILT */
+const card=document.querySelector('.card');
+document.addEventListener('mousemove',e=>{
+  const x=(e.clientX/W-.5)*9,y=(e.clientY/H-.5)*9;
+  card.style.transform=`perspective(900px) rotateY(${x*.28}deg) rotateX(${-y*.28}deg)`;
+});
+document.addEventListener('mouseleave',()=>card.style.transform='');
+</script>
+</body>
+</html>

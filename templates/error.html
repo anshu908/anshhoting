@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ code }} — ANSHHOSTING</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Space Grotesk',sans-serif;background:#030508;color:#e8eaf0;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#c{position:fixed;inset:0;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;text-align:center;padding:40px}
+.code{font-family:'Orbitron',monospace;font-size:clamp(80px,15vw,140px);font-weight:900;line-height:1;
+  background:linear-gradient(135deg,rgba(255,62,108,.9),rgba(168,85,247,.9));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:none;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.2)}}
+.msg{font-size:24px;font-weight:700;margin:16px 0 8px;color:#fff}
+.desc{font-size:14px;color:#7a8fb5;margin-bottom:32px;max-width:400px;margin-left:auto;margin-right:auto}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:rgba(0,200,255,.1);
+  border:1px solid rgba(0,200,255,.25);border-radius:10px;color:#00c8ff;text-decoration:none;
+  font-weight:600;font-size:14px;transition:all .2s}
+.btn:hover{background:rgba(0,200,255,.2);box-shadow:0 0 20px rgba(0,200,255,.2)}
+.glitch{position:relative}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;inset:0;background:inherit;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.glitch::before{left:2px;text-shadow:none;animation:g1 3s infinite;clip-path:polygon(0 0,100% 0,100% 45%,0 45%)}
+.glitch::after{left:-2px;animation:g2 3s infinite;clip-path:polygon(0 55%,100% 55%,100% 100%,0 100%)}
+@keyframes g1{0%,100%{opacity:0}20%{opacity:.8;transform:translate(-2px,1px)}21%{opacity:0}}
+@keyframes g2{0%,100%{opacity:0}40%{opacity:.8;transform:translate(2px,-1px)}41%{opacity:0}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="wrap">
+  <div class="code glitch" data-text="{{ code }}">{{ code }}</div>
+  <div class="msg">{{ msg }}</div>
+  <div class="desc">{{ desc }}</div>
+  <a href="{{ url_for('dashboard') if session.get('uid') else url_for('home') }}" class="btn">← Go Back</a>
+</div>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+let W,H,ns=[];
+function sz(){W=cv.width=innerWidth;H=cv.height=innerHeight}sz();addEventListener('resize',sz);
+function mk(){return{x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.5+.5,a:Math.random()*.5+.2}}
+for(let i=0;i<40;i++)ns.push(mk());
+(function f(){cx.clearRect(0,0,W,H);ns.forEach(n=>{n.x+=n.vx;n.y+=n.vy;if(n.x<0||n.x>W)n.vx*=-1;if(n.y<0||n.y>H)n.vy*=-1;cx.beginPath();cx.arc(n.x,n.y,n.r,0,Math.PI*2);cx.fillStyle=`rgba(255,62,108,${n.a*.3})`;cx.fill()});requestAnimationFrame(f)})();
+</script>
+</body>
+</html>

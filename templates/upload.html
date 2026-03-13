@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deploy — ANSHHOSTING</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+</head>
+<body>
+<div class="shell">
+{% include '_sidebar.html' %}
+<main class="main">
+  <div class="topbar">
+    <div class="page-hd"><h1>⬆ Deploy Project</h1><p>Upload your Python or Node.js app</p></div>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-ghost btn-sm">← Dashboard</a>
+  </div>
+  <div class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat,msg in messages %}<div class="alert alert-{{ 'error' if cat=='error' else 'success' }}">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+    <div class="grid2" style="gap:22px;align-items:start">
+      <div class="card anim-card-in">
+        <div class="card-head"><div class="card-title">📁 Upload Project</div><div class="card-sub">Supports .py · .js · .zip — max 500MB</div></div>
+        <form method="POST" enctype="multipart/form-data" id="df">
+          <div class="form-row">
+            <label class="form-label">Project Name</label>
+            <input type="text" name="project_name" class="form-input" placeholder="my-awesome-app" required>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Description <span style="color:var(--txt3)">(optional)</span></label>
+            <input type="text" name="description" class="form-input" placeholder="What does this do?">
+          </div>
+          <div class="form-row">
+            <label class="form-label">Project File</label>
+            <div class="drop-zone" id="dz">
+              <div style="font-size:36px;margin-bottom:12px;animation:floatUp 3s ease-in-out infinite">📂</div>
+              <div style="font-weight:700;font-size:15px;margin-bottom:5px" id="dz-lbl">Click or drag & drop here</div>
+              <div style="font-size:12px;color:var(--txt3)">.py · .js · .zip · .ts</div>
+              <input type="file" id="fi" name="file" accept=".py,.js,.zip,.ts,.jsx,.tsx" style="display:none" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w100" id="db" style="padding:14px;font-size:15px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+            Upload & Deploy
+          </button>
+        </form>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card anim-card-in" style="animation-delay:.08s;border-color:rgba(0,200,255,.15)">
+          <div class="card-head"><div class="card-title">⚡ Deploy Flow</div></div>
+          <div style="display:flex;flex-direction:column;gap:11px">
+            {% for step in [('1','📂','Upload your file'),('2','🎯','Select entry file'),('3','📦','Deps auto-install'),('4','🚀','App auto-starts'),('5','📟','Watch live terminal')] %}
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--txt2)">
+              <div style="width:22px;height:22px;border-radius:6px;background:rgba(0,200,255,.08);border:1px solid rgba(0,200,255,.2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--c0);flex-shrink:0">{{ step[0] }}</div>
+              <span>{{ step[1] }} {{ step[2] }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="card anim-card-in" style="animation-delay:.14s">
+          <div class="card-head"><div class="card-title">💡 Entry File Examples</div></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.3;color:var(--txt2)">
+            <div><span style="color:#61dafb">Python: </span><span style="color:var(--c0)">main.py · app.py · bot.py</span></div>
+            <div><span style="color:#68d391">Node:   </span><span style="color:var(--c1)">index.js · app.js · server.js</span></div>
+          </div>
+        </div>
+        <div class="card anim-card-in" style="animation-delay:.2s;border-color:rgba(0,255,163,.12)">
+          <div class="card-head"><div class="card-title" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--c1)"># Use PORT env variable</div></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2;color:var(--txt2)">
+            <div style="color:var(--txt3)"># Python</div>
+            <div>port = os.environ.get(<span style="color:var(--c1)">'PORT'</span>, 5001)</div>
+            <div style="margin-top:6px;color:var(--txt3)">// Node.js</div>
+            <div>const port = process.env.<span style="color:var(--c1)">PORT</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<script src="{{ url_for('static',filename='script.js') }}"></script>
+<script>
+const dz=document.getElementById('dz');
+const fi=document.getElementById('fi');
+const lbl=document.getElementById('dz-lbl');
+dz.addEventListener('click',()=>fi.click());
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='var(--c0)';dz.style.background='rgba(0,200,255,.04)'});
+dz.addEventListener('dragleave',()=>{dz.style.borderColor='';dz.style.background=''});
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.style.borderColor='';dz.style.background='';
+  if(e.dataTransfer.files[0]){fi.files=e.dataTransfer.files;lbl.textContent='✓ '+e.dataTransfer.files[0].name;lbl.style.color='var(--c1)'}
+});
+fi.addEventListener('change',()=>{if(fi.files[0]){lbl.textContent='✓ '+fi.files[0].name;lbl.style.color='var(--c1)'}});
+document.getElementById('df').addEventListener('submit',function(){
+  const b=document.getElementById('db');b.innerHTML='⏳ Uploading…';b.disabled=true;
+});
+</script>
+</body></html>

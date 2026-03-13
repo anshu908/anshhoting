@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Configure Deployment — ANSHHOSTING</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+</head>
+<body>
+<div class="shell">
+{% include '_sidebar.html' %}
+
+<main class="main">
+  <div class="topbar">
+    <div class="page-hd">
+      <h1>⚙ Configure Deployment</h1>
+      <p>Step 2 of 2 — Choose your entry file</p>
+    </div>
+    <a href="{{ url_for('deploy') }}" class="btn btn-ghost btn-sm">← Start Over</a>
+  </div>
+
+  <div class="content">
+
+    <!-- Progress bar -->
+    <div style="margin-bottom:28px">
+      <div style="display:flex;gap:0;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
+        <div style="flex:1;padding:12px 20px;background:rgba(0,200,255,0.08);border-right:1px solid var(--border);font-size:13px;font-weight:600;color:var(--txt2)">
+          <span style="color:var(--c1)">✓</span> Step 1: Upload File
+        </div>
+        <div style="flex:1;padding:12px 20px;background:rgba(0,200,255,0.05);font-size:13px;font-weight:600;color:var(--c0)">
+          <span style="color:var(--c0)">→</span> Step 2: Configure & Deploy
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2" style="gap:24px;align-items:start">
+
+      <!-- Config form -->
+      <div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">🎯 Choose Entry File</div><div class="card-sub">Select which file to run as your application's main entry point</div></div>
+
+          <!-- Project info -->
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)">
+            <div style="flex:1;min-width:120px">
+              <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">Project</div>
+              <div style="font-weight:700;font-size:15px">{{ tmp.name }}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">Language</div>
+              <span class="tag tag-{{ 'py' if tmp.lang=='python' else 'node' if tmp.lang=='nodejs' else 'unk' }}">
+                {{ '🐍 Python' if tmp.lang=='python' else '💚 Node.js' if tmp.lang=='nodejs' else '❓ Unknown' }}
+              </span>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">Port</div>
+              <span class="proj-port">:{{ tmp.port }}</span>
+            </div>
+          </div>
+
+          <form method="POST" id="config-form">
+
+            {% if tmp.available_entries %}
+            <div class="form-row">
+              <label class="form-label">Select Entry File</label>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                {% for ef in tmp.available_entries %}
+                <label style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:var(--r2);cursor:pointer;transition:all 0.15s" class="entry-option">
+                  <input type="radio" name="entry_file" value="{{ ef }}" style="accent-color:var(--c0)"
+                         {% if loop.first %}checked{% endif %}>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600">
+                    {{ '🐍' if ef.endswith('.py') else '💛' if ef.endswith('.js') else '📄' }} {{ ef }}
+                  </span>
+                  {% if ef in ['main.py','app.py','index.js','app.js','server.py','server.js'] %}
+                  <span style="margin-left:auto;font-size:10px;color:var(--c0);background:rgba(0,200,255,0.1);padding:2px 8px;border-radius:4px;border:1px solid rgba(0,200,255,0.15)">Recommended</span>
+                  {% endif %}
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div style="margin:16px 0;padding:12px 16px;background:rgba(0,200,255,0.04);border:1px solid rgba(0,200,255,0.1);border-radius:var(--r2)">
+              <div style="font-size:12px;color:var(--txt2)">
+                💡 Or type a custom filename if your entry file isn't listed:
+              </div>
+              <input type="text" id="custom-entry" placeholder="e.g. myapp.py"
+                     style="margin-top:8px;width:100%;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--r2);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none"
+                     oninput="handleCustomEntry(this.value)">
+            </div>
+
+            {% else %}
+            <!-- Manual entry if no files detected -->
+            <div class="form-row">
+              <label class="form-label">Entry File Name</label>
+              <input type="text" name="entry_file" class="form-input" placeholder="e.g. main.py or index.js"
+                     required style="font-family:'JetBrains Mono',monospace">
+              <div style="margin-top:6px;font-size:12px;color:var(--txt3)">No {{ tmp.lang }} files detected in the uploaded file. Enter filename manually.</div>
+            </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary w100" style="margin-top:8px;padding:14px" id="deploy-btn">
+              🚀 Deploy & Auto-Start
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right panel: what happens next -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+
+        <div class="card" style="border-color:rgba(0,200,255,0.2)">
+          <div class="card-head"><div class="card-title">⚡ What happens next</div></div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            {% set steps_list = [
+              ('1', '🔍', 'Detect language', 'Already done: ' + tmp.lang),
+              ('2', '📦', 'Install dependencies', 'Auto pip install / npm install'),
+              ('3', '🚀', 'Auto-start project', 'Runs on port ' + tmp.port|string),
+              ('4', '📟', 'Open live terminal', 'Watch it happen in real-time'),
+            ] %}
+            {% for num, ico, title, desc in steps_list %}
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:24px;height:24px;border-radius:50%;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--c0);flex-shrink:0">{{ num }}</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;margin-bottom:2px">{{ ico }} {{ title }}</div>
+                <div style="font-size:12px;color:var(--txt3)">{{ desc }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div class="card-title">📋 What to name your entry file</div></div>
+          <div style="font-size:12px;color:var(--txt2);line-height:2">
+            <div style="margin-bottom:8px;font-weight:600;color:var(--txt)">🐍 Python (preferred order):</div>
+            <div class="mono" style="display:flex;flex-direction:column;gap:2px">
+              <span style="color:var(--c1)">main.py</span> <span style="color:var(--c0)">app.py</span>
+              <span>server.py &nbsp; run.py &nbsp; wsgi.py</span>
+            </div>
+            <div style="margin:12px 0 8px;font-weight:600;color:var(--txt)">💚 Node.js (preferred order):</div>
+            <div class="mono" style="display:flex;flex-direction:column;gap:2px">
+              <span style="color:var(--c1)">index.js</span> <span style="color:var(--c0)">app.js</span>
+              <span>server.js &nbsp; main.js</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="border-color:rgba(0,255,163,0.15)">
+          <div style="font-size:12px;color:var(--txt2);line-height:1.8">
+            <div style="font-weight:700;color:var(--c1);margin-bottom:6px">✅ Use PORT env variable!</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--c1)">
+              # Python<br>
+              port = int(os.environ.get('PORT', 5001))<br><br>
+              // Node.js<br>
+              const port = process.env.PORT || 3000;
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<script src="{{ url_for('static',filename='script.js') }}"></script>
+<script>
+// Style selected radio
+document.querySelectorAll('.entry-option').forEach(label => {
+  const radio = label.querySelector('input[type=radio]');
+  function update() {
+    document.querySelectorAll('.entry-option').forEach(l => {
+      l.style.borderColor = 'var(--border)';
+      l.style.background = 'rgba(255,255,255,0.02)';
+    });
+    if (radio.checked) {
+      label.style.borderColor = 'var(--c0)';
+      label.style.background = 'rgba(0,200,255,0.07)';
+    }
+  }
+  radio.addEventListener('change', update);
+  if (radio.checked) update();
+  label.addEventListener('click', () => { radio.checked=true; update(); });
+});
+
+function handleCustomEntry(val) {
+  const radios = document.querySelectorAll('input[name=entry_file]');
+  if (val.trim()) {
+    radios.forEach(r => r.checked = false);
+    // Set custom value
+    let hidden = document.getElementById('custom-hidden');
+    if (!hidden) {
+      hidden = document.createElement('input');
+      hidden.type='hidden'; hidden.name='entry_file'; hidden.id='custom-hidden';
+      document.getElementById('config-form').appendChild(hidden);
+      // disable other radios' name
+      radios.forEach(r => r.name = '_entry_disabled');
+    }
+    hidden.value = val.trim();
+  } else {
+    const hidden = document.getElementById('custom-hidden');
+    if (hidden) hidden.remove();
+    document.querySelectorAll('input[name="_entry_disabled"]').forEach(r => r.name='entry_file');
+    if (document.querySelector('input[name=entry_file]'))
+      document.querySelector('input[name=entry_file]').checked = true;
+  }
+}
+
+document.getElementById('config-form').addEventListener('submit', function() {
+  const b = document.getElementById('deploy-btn');
+  b.innerHTML = '⏳ Deploying…'; b.disabled = true;
+});
+</script>
+</body></html>

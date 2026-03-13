@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Terminal — {{ p.name }} — ANSHHOSTING</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+<style>
+/* ── TERMINAL PAGE ───────────────────────── */
+.term-page { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+.term-content { flex:1; display:flex; gap:16px; padding:16px; overflow:hidden; min-height:0; }
+
+/* Terminal box */
+.term-wrap {
+  flex:1; display:flex; flex-direction:column; min-height:0;
+  background:#010604; border:1px solid rgba(0,255,100,.12);
+  border-radius:12px; overflow:hidden;
+  box-shadow:0 0 0 1px rgba(0,255,100,.04), 0 22px 55px rgba(0,0,0,.7);
+}
+.term-bar {
+  background:rgba(3,10,5,.98); padding:10px 14px;
+  display:flex; align-items:center; gap:8px;
+  border-bottom:1px solid rgba(0,255,100,.07);
+  flex-shrink:0;
+}
+.term-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
+.term-title { font-size:12px; color:rgba(120,200,120,.7); font-family:'JetBrains Mono',monospace; flex:1; margin-left:4px; }
+.term-meta { display:flex; align-items:center; gap:10px; font-size:11px; color:rgba(100,180,100,.5); }
+
+/* Log area */
+.term-body {
+  flex:1; overflow-y:auto; overflow-x:hidden;
+  padding:14px 16px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12.5px; line-height:1.85;
+  color:#8ab88a;
+  background:#010604;
+  min-height:0;
+}
+.term-body::-webkit-scrollbar { width:5px; }
+.term-body::-webkit-scrollbar-thumb { background:rgba(0,255,100,.1); border-radius:3px; }
+.term-body::-webkit-scrollbar-thumb:hover { background:rgba(0,255,100,.2); }
+
+/* Log line types */
+.tl-err    { color:#ff6b8a; }
+.tl-warn   { color:#ffb800; }
+.tl-info   { color:#00c8ff; }
+.tl-setup  { color:#a8d8a8; }
+.tl-ok     { color:#00ffa3; font-weight:600; }
+.tl-head   { color:#e0e0e0; font-weight:600; }
+.tl-out    { color:#c8dcc8; }
+.tl-blank  { opacity:0; user-select:none; }
+
+/* Right panel */
+.term-side {
+  width:260px; flex-shrink:0; display:flex; flex-direction:column; gap:12px;
+  overflow-y:auto;
+}
+.term-side::-webkit-scrollbar { width:3px; }
+.term-side::-webkit-scrollbar-thumb { background:rgba(255,255,255,.06); }
+
+/* Status card */
+.status-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:10px; padding:14px;
+}
+.status-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 12px; border-radius:20px; font-size:11px; font-weight:700;
+  text-transform:uppercase; letter-spacing:.8px;
+}
+.status-badge.running { background:rgba(0,255,163,.1); border:1px solid rgba(0,255,163,.25); color:var(--c1); }
+.status-badge.stopped { background:rgba(120,120,120,.08); border:1px solid rgba(120,120,120,.18); color:#666; }
+.status-badge.error   { background:rgba(255,62,108,.1); border:1px solid rgba(255,62,108,.25); color:var(--c2); }
+.status-badge.installing { background:rgba(255,184,0,.1); border:1px solid rgba(255,184,0,.25); color:var(--c3); animation:blink 1.5s infinite; }
+
+/* Metric row */
+.metric { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.04); }
+.metric:last-child { border-bottom:none; }
+.metric-k { font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:var(--txt3); }
+.metric-v { font-size:12px; font-weight:700; font-family:'JetBrains Mono',monospace; }
+
+/* Manual install */
+.install-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px; }
+.install-card textarea { resize:none; height:72px; font-family:'JetBrains Mono',monospace; font-size:12px; }
+.install-pills { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
+.pill { padding:3px 9px; border-radius:4px; font-size:11px; cursor:pointer; font-family:'JetBrains Mono',monospace; background:rgba(0,200,255,.08); border:1px solid rgba(0,200,255,.15); color:var(--c0); transition:all .15s; }
+.pill:hover { background:rgba(0,200,255,.16); }
+
+/* Actions card */
+.actions-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px; }
+.actions-card .btn { margin-bottom:7px; }
+
+/* Dep status bar */
+.dep-bar {
+  flex-shrink:0; padding:7px 16px; font-size:11px;
+  background:rgba(255,184,0,.08); border-top:1px solid rgba(255,184,0,.12);
+  color:var(--c3); font-family:'JetBrains Mono',monospace;
+  display:flex; align-items:center; gap:8px;
+  animation:blink 1.5s infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+</style>
+</head>
+<body>
+<div class="shell">
+  {% include '_sidebar.html' %}
+
+  <main class="main term-page">
+    <!-- Topbar -->
+    <div class="topbar" style="flex-shrink:0">
+      <div class="page-hd">
+        <div class="flex fai gap2">
+          <a href="{{ url_for('dashboard') }}" class="btn btn-ghost btn-xs">← Dashboard</a>
+          <span style="color:var(--txt3)">/</span>
+          <a href="{{ url_for('project_view',pid=p.id) }}" class="btn btn-ghost btn-xs">{{ p.name }}</a>
+          <span style="color:var(--txt3)">/</span>
+          <span style="font-size:12px;color:var(--txt2)">Terminal</span>
+        </div>
+      </div>
+      <div class="flex fai gap2">
+        <span class="tag tag-{{ 'py' if p.language=='python' else 'node' if p.language=='nodejs' else 'unk' }}">
+          {{ '🐍 Python' if p.language=='python' else '💚 Node.js' if p.language=='nodejs' else p.language }}
+        </span>
+        <span class="status-badge {{ p.status }}" id="status-badge">
+          <span class="pulse {{ p.status }}"></span>
+          {{ p.status.capitalize() }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="term-content">
+
+      <!-- Terminal box -->
+      <div class="term-wrap">
+        <div class="term-bar">
+          <div class="term-dot" style="background:#ff5f57"></div>
+          <div class="term-dot" style="background:#febc2e"></div>
+          <div class="term-dot" style="background:#28c840"></div>
+          <span class="term-title">{{ p.name }} · :{{ p.port }}</span>
+          <div class="term-meta">
+            <span id="log-count">0 lines</span>
+            <button class="btn btn-ghost btn-xs" id="btn-clear">Clear</button>
+            <button class="btn btn-ghost btn-xs" id="btn-scroll">↓ Bottom</button>
+            <button class="btn btn-ghost btn-xs" id="btn-autoscroll" title="Auto-scroll ON">🔄 Auto</button>
+          </div>
+        </div>
+        <div class="term-body" id="term-body">
+          <span class="tl-info">[ANSHHOSTING] Connecting to log stream...</span>
+        </div>
+        <!-- Installing bar (shown during dep install) -->
+        <div class="dep-bar" id="dep-bar" style="display:none">
+          ⚡ Installing dependencies — watch the logs above…
+        </div>
+      </div>
+
+      <!-- Right panel -->
+      <div class="term-side">
+
+        <!-- Status card -->
+        <div class="status-card">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--txt3);margin-bottom:10px">Status</div>
+          <div id="status-badge-lg" class="status-badge {{ p.status }}" style="width:100%;justify-content:center;margin-bottom:12px">
+            <span class="pulse {{ p.status }}"></span>{{ p.status.capitalize() }}
+          </div>
+          <div class="metric"><span class="metric-k">Port</span><span class="metric-v txt-c0">:{{ p.port }}</span></div>
+          <div class="metric"><span class="metric-k">RAM</span><span class="metric-v" id="mem-val">—</span></div>
+          <div class="metric"><span class="metric-k">Uptime</span><span class="metric-v" id="uptime-val">—</span></div>
+          <div class="metric"><span class="metric-k">Entry</span><span class="metric-v" style="font-size:11px;color:var(--txt2)">{{ p.entry_file or '—' }}</span></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions-card">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--txt3);margin-bottom:10px">Controls</div>
+          <button class="btn btn-green btn-sm w100" onclick="projAction('{{ p.id }}','start')">▶ Start</button>
+          <button class="btn btn-amber btn-sm w100" onclick="projAction('{{ p.id }}','restart')">↺ Restart</button>
+          <button class="btn btn-red btn-sm w100" onclick="projAction('{{ p.id }}','stop')">⏸ Stop</button>
+          <button class="btn btn-ghost btn-sm w100" onclick="reinstallDeps()">🔄 Reinstall Deps</button>
+        </div>
+
+        <!-- Manual pip install -->
+        <div class="install-card">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--txt3);margin-bottom:8px">
+            📦 Manual pip install
+          </div>
+          <div style="font-size:11px;color:var(--txt3);margin-bottom:8px">
+            Enter package names (space or comma separated):
+          </div>
+          <textarea class="form-input" id="pkgs-input" placeholder="flask requests numpy pandas&#10;or: flask, requests, numpy"></textarea>
+
+          <!-- Quick-add popular packages -->
+          <div style="font-size:10px;color:var(--txt3);margin:7px 0 5px">Quick add:</div>
+          <div class="install-pills">
+            {% for pkg in ['flask','fastapi','requests','aiohttp','discord.py','python-telegram-bot','pymongo','sqlalchemy','pandas','numpy','pillow','beautifulsoup4','selenium','playwright','pydantic','uvicorn','gunicorn','celery','redis','python-dotenv'] %}
+            <span class="pill" onclick="addPkg('{{ pkg }}')">{{ pkg }}</span>
+            {% endfor %}
+          </div>
+
+          <button class="btn btn-primary btn-sm w100" style="margin-top:12px" onclick="installPkgs()" id="install-btn">
+            ⚡ Install Packages
+          </button>
+          <div id="install-status" style="font-size:11px;color:var(--txt3);margin-top:6px;display:none"></div>
+        </div>
+
+        <!-- Project info -->
+        <div class="status-card">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--txt3);margin-bottom:10px">Info</div>
+          <div class="metric"><span class="metric-k">Language</span><span class="metric-v">{{ p.language }}</span></div>
+          <div class="metric"><span class="metric-k">Project ID</span><span class="metric-v" style="font-size:9px;color:var(--txt3)">{{ p.id }}</span></div>
+        </div>
+
+      </div>
+    </div><!-- /term-content -->
+  </main>
+</div>
+
+<script src="{{ url_for('static',filename='script.js') }}"></script>
+<script>
+const PID = '{{ p.id }}';
+const body   = document.getElementById('term-body');
+const counter= document.getElementById('log-count');
+const depBar = document.getElementById('dep-bar');
+
+let autoScroll = true;
+let lastIdx    = 0;
+let pollActive = true;
+let failCount  = 0;
+
+// ── LOG COLORISER ────────────────────────────────────
+function colorLine(raw) {
+  if (!raw || !raw.trim()) return '<span class="tl-blank"> </span>';
+  const e = raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Status / success
+  if (/✅|✓|done!|installed!|Started|Running|🚀/.test(e)) return `<span class="tl-ok">${e}</span>`;
+  // Errors
+  if (/❌|Error:|Traceback|Exception|FAILED|✗|ERR\]/.test(e)) return `<span class="tl-err">${e}</span>`;
+  // Warnings
+  if (/⚠|Warning:|WARN\]/.test(e)) return `<span class="tl-warn">${e}</span>`;
+  // Headers / section borders
+  if (/^[╔╠╚═─]+/.test(e.trim()) || /^[═]+/.test(e.trim())) return `<span class="tl-head">${e}</span>`;
+  // Setup/install steps  
+  if (/📦|Step \d|pip install|npm install|venv|requirements/.test(e)) return `<span class="tl-setup">${e}</span>`;
+  // Info
+  if (/INFO\]|SETUP\]|MANUAL\]|PROC\]/.test(e)) return `<span class="tl-info">${e}</span>`;
+  // Default process output
+  return `<span class="tl-out">${e}</span>`;
+}
+
+// ── APPEND LOG LINES ─────────────────────────────────
+function appendLogs(lines) {
+  const wasAtBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 120;
+  const frag = document.createDocumentFragment();
+  lines.forEach(line => {
+    const div = document.createElement('div');
+    div.innerHTML = colorLine(line);
+    frag.appendChild(div);
+  });
+  body.appendChild(frag);
+  if (wasAtBottom && autoScroll) body.scrollTop = body.scrollHeight;
+}
+
+// ── UPDATE STATUS BADGES ─────────────────────────────
+function updateStatus(st, mem, uptime, depSt) {
+  const badges = [
+    document.getElementById('status-badge'),
+    document.getElementById('status-badge-lg')
+  ];
+  badges.forEach(b => {
+    if (!b) return;
+    b.className = 'status-badge ' + st;
+    b.innerHTML = `<span class="pulse ${st}"></span>${st.charAt(0).toUpperCase()+st.slice(1)}`;
+  });
+  const mv = document.getElementById('mem-val');
+  const uv = document.getElementById('uptime-val');
+  if (mv) mv.textContent = (st === 'running' && mem > 0) ? mem + ' MB' : '—';
+  if (uv) uv.textContent = (st === 'running' && uptime) ? uptime : '—';
+
+  // Dep install bar
+  if (depBar) {
+    depBar.style.display = depSt === 'installing' ? 'flex' : 'none';
+  }
+}
+
+// ── POLL LOOP ────────────────────────────────────────
+async function poll() {
+  if (!pollActive) return;
+  try {
+    const r = await fetch(`/api/logs/${PID}?after=${lastIdx}`);
+    if (r.status === 401) { pollActive = false; return; }
+    const d = await r.json();
+
+    if (d.logs && d.logs.length > 0) {
+      appendLogs(d.logs);
+      lastIdx += d.logs.length;
+      if (counter) counter.textContent = lastIdx + ' lines';
+    }
+    updateStatus(d.status, d.memory, d.uptime, d.dep_status);
+    failCount = 0;
+
+    // Poll faster during install (every 300ms), slower otherwise
+    const delay = d.dep_status === 'installing' ? 300 :
+                  d.status === 'running' ? 800 : 2000;
+    setTimeout(poll, delay);
+  } catch(e) {
+    failCount++;
+    if (failCount > 8) { pollActive = false; return; }
+    setTimeout(poll, 3000);
+  }
+}
+
+// Start polling immediately
+body.innerHTML = '';  // clear placeholder
+poll();
+
+// ── BUTTONS ──────────────────────────────────────────
+document.getElementById('btn-clear').addEventListener('click', () => {
+  body.innerHTML = ''; lastIdx = 0;
+  if (counter) counter.textContent = '0 lines';
+});
+document.getElementById('btn-scroll').addEventListener('click', () => {
+  body.scrollTop = body.scrollHeight;
+});
+document.getElementById('btn-autoscroll').addEventListener('click', function() {
+  autoScroll = !autoScroll;
+  this.textContent = autoScroll ? '🔄 Auto' : '⏸ Auto';
+  this.style.color = autoScroll ? 'var(--c1)' : 'var(--c2)';
+  if (autoScroll) body.scrollTop = body.scrollHeight;
+});
+
+// ── MANUAL PACKAGE INSTALL ────────────────────────────
+function addPkg(name) {
+  const ta = document.getElementById('pkgs-input');
+  const cur = ta.value.trim();
+  ta.value = cur ? cur + ' ' + name : name;
+  ta.focus();
+}
+
+async function installPkgs() {
+  const input   = document.getElementById('pkgs-input');
+  const btn     = document.getElementById('install-btn');
+  const statusEl= document.getElementById('install-status');
+  const pkgs    = input.value.trim();
+  if (!pkgs) { alert('Enter at least one package name!'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Installing…';
+  statusEl.style.display = 'block';
+  statusEl.textContent = '📦 Installing ' + pkgs + '…';
+  statusEl.style.color = 'var(--c3)';
+
+  try {
+    const r = await fetch(`/api/project/${PID}/install`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ packages: pkgs })
+    });
+    const d = await r.json();
+    if (d.status === 'installing') {
+      statusEl.textContent = '⚡ Installing in background — watch the logs!';
+      statusEl.style.color = 'var(--c1)';
+      input.value = '';
+      // Speed up polling
+      lastIdx = Math.max(0, lastIdx - 2);
+    } else {
+      statusEl.textContent = '❌ Error: ' + (d.error || 'Unknown');
+      statusEl.style.color = 'var(--c2)';
+    }
+  } catch(e) {
+    statusEl.textContent = '❌ Network error';
+    statusEl.style.color = 'var(--c2)';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⚡ Install Packages';
+  }
+}
+
+async function reinstallDeps() {
+  if (!confirm('Reinstall all dependencies and restart?')) return;
+  const r = await fetch(`/api/project/${PID}/reinstall`, { method: 'POST' });
+  const d = await r.json();
+  if (d.status === 'reinstalling') {
+    toast('🔄 Reinstalling dependencies...', 'info');
+  }
+}
+
+// Also trigger on Enter in textarea (Ctrl+Enter)
+document.getElementById('pkgs-input').addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 'Enter') installPkgs();
+});
+</script>
+</body>
+</html>
