@@ -1,0 +1,22 @@
+{
+  "d44e8c00-2202-45e2-ac19-b16cd1c1a450": {
+    "id": "d44e8c00-2202-45e2-ac19-b16cd1c1a450",
+    "username": "admin",
+    "email": "admin@anshhosting.local",
+    "password": "ca3d10184e978883d5f24dae8e3ef7a67258cedacb17b293a7a6d302bf8d8b7b",
+    "is_admin": true,
+    "plan": "admin",
+    "plan_expiry": null,
+    "created_at": "2026-03-13T12:19:44.759386"
+  },
+  "8b34d4a4-8ba5-426d-8163-a229d5da5b48": {
+    "id": "8b34d4a4-8ba5-426d-8163-a229d5da5b48",
+    "username": "anshapi",
+    "email": "anshppt19@gmail.com",
+    "password": "002a60fd5baabeb0ad1d7541586db5f227f66ae6cef6710116fb98d34c75bc28",
+    "is_admin": false,
+    "plan": "premium",
+    "plan_expiry": "2027-03-13T12:44:15.774502",
+    "created_at": "2026-03-13T12:20:11.528383"
+  }
+}
